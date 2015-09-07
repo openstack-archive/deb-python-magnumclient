@@ -21,8 +21,8 @@ override_dh_auto_install:
 			--root $(CURDIR)/debian/python3-magnumclient; \
 	done
 	rm -rf $(CURDIR)/debian/python*-magnumclient/usr/lib/python*/dist-packages/*.pth
-	mv $(CURDIR)/debian/python-magnum/usr/bin/magnum $(CURDIR)/debian/python-magnum/usr/bin/python2-magnum
-	mv $(CURDIR)/debian/python3-magnum/usr/bin/magnum $(CURDIR)/debian/python3-magnum/usr/bin/python3-magnum
+	mv $(CURDIR)/debian/python-magnumclient/usr/bin/magnum $(CURDIR)/debian/python-magnumclient/usr/bin/python2-magnum
+	mv $(CURDIR)/debian/python3-magnumclient/usr/bin/magnum $(CURDIR)/debian/python3-magnumclient/usr/bin/python3-magnum
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))

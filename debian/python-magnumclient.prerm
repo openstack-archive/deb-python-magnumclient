@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "remove" ] ; then
+	update-alternatives --remove magnum /usr/bin/python2-magnum
+fi
+
+#DEBHELPER#
+
+exit 0
