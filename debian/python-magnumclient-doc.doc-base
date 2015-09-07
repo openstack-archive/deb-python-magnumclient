@@ -1,0 +1,9 @@
+Document: python-magnumclient-doc
+Title: python-magnumclient Documentation
+Author: N/A
+Abstract: Sphinx documentation for python-magnumclient
+Section: Programming/Python
+
+Format: HTML
+Index: /usr/share/doc/python-magnumclient-doc/html/index.html
+Files: /usr/share/doc/python-magnumclient-doc/html/*

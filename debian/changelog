@@ -1,0 +1,5 @@
+python-magnumclient (0.2.1-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #798251)
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 07 Sep 2015 13:11:21 +0200
