@@ -1,4 +1,4 @@
-python-magnumclient (0.2.1-1) unstable; urgency=medium
+python-magnumclient (0.2.1-1) experimental; urgency=medium
 
   * Initial release. (Closes: #798251)
 
