@@ -29,16 +29,20 @@ class PodManager(base.Manager):
     resource_class = Pod
 
     @staticmethod
-    def _path(id=None):
-        return '/v1/pods/%s' % id if id else '/v1/pods'
+    def _path(id=None, bay_uuid=None):
+        if id and bay_uuid:
+            return '/v1/pods/%s/%s' % (id, bay_uuid)
+        else:
+            return '/v1/pods'
 
-    def list(self, limit=None, marker=None, sort_key=None,
+    def list(self, bay_ident, limit=None, marker=None, sort_key=None,
              sort_dir=None, detail=False):
-        """Retrieve a list of port.
+        """Retrieve a list of pods.
 
-        :param marker: Optional, the UUID of a port, eg the last
-                       port from a previous result set. Return
-                       the next result set.
+        :param bay_ident: UUID or Name of the Bay.
+        :param marker: Optional, the UUID or Name of a pod, e.g. the last
+                       pod from a previous result set. Return the next
+                       result set.
         :param limit: The maximum number of results to return per
                       request, if:
 
@@ -63,6 +67,7 @@ class PodManager(base.Manager):
             limit = int(limit)
 
         filters = utils.common_filters(marker, limit, sort_key, sort_dir)
+        filters.append('bay_ident=%s' % bay_ident)
 
         path = ''
         if detail:
@@ -76,9 +81,9 @@ class PodManager(base.Manager):
             return self._list_pagination(self._path(path), "pods",
                                          limit=limit)
 
-    def get(self, id):
+    def get(self, id, bay_uuid):
         try:
-            return self._list(self._path(id))[0]
+            return self._list(self._path(id, bay_uuid))[0]
         except IndexError:
             return None
 
@@ -92,8 +97,8 @@ class PodManager(base.Manager):
                     "Key must be in %s" % ",".join(CREATION_ATTRIBUTES))
         return self._create(self._path(), new)
 
-    def delete(self, id):
-        return self._delete(self._path(id))
+    def delete(self, id, bay_uuid):
+        return self._delete(self._path(id, bay_uuid))
 
-    def update(self, id, patch):
-        return self._update(self._path(id), patch)
+    def update(self, id, bay_uuid, patch):
+        return self._update(self._path(id, bay_uuid), patch)
