@@ -1,7 +1,11 @@
 python-magnumclient (1.1.0-1) UNRELEASED; urgency=medium
 
+  [ Corey Bryant ]
   * New upstream release.
   * Align build(-depends) with upstream.
+
+  [ James Page ]
+  * d/rules: Ensure unit tests are executed for all python versions.
 
  -- Corey Bryant <corey.bryant@canonical.com>  Wed, 16 Dec 2015 15:32:41 -0500
 
