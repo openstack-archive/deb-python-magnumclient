@@ -3,6 +3,7 @@ python-magnumclient (1.1.0-1) UNRELEASED; urgency=medium
   [ Corey Bryant ]
   * New upstream release.
   * Align build(-depends) with upstream.
+  * d/p/py3-unicode-compat.patch: Add py3 compatibility for unicode builtin.
 
   [ James Page ]
   * d/rules: Ensure unit tests are executed for all python versions.
