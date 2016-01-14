@@ -15,8 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
+
 from magnumclient.common import utils
 from magnumclient.openstack.common.apiclient import exceptions as exc
+from magnumclient.openstack.common import cliutils
 from magnumclient.tests import utils as test_utils
 
 
@@ -95,3 +98,89 @@ class ArgsArrayToPatchTest(test_utils.BaseTestCase):
                                           my_args['attributes'])
         self.assertEqual([{'op': 'remove', 'path': '/foo'},
                           {'op': 'remove', 'path': '/extra/bar'}], patch)
+
+
+class FormatLabelsTest(test_utils.BaseTestCase):
+
+    def test_format_label_none(self):
+        self.assertEqual({}, utils.format_labels(None))
+
+    def test_format_labels(self):
+        l = utils.format_labels([
+            'K1=V1,K2=V2,'
+            'K3=V3,K4=V4,'
+            'K5=V5'])
+        self.assertEqual({'K1': 'V1',
+                          'K2': 'V2',
+                          'K3': 'V3',
+                          'K4': 'V4',
+                          'K5': 'V5'
+                          }, l)
+
+    def test_format_labels_split(self):
+        l = utils.format_labels([
+            'K1=V1,'
+            'K2=V22222222222222222222222222222'
+            '222222222222222222222222222,'
+            'K3=3.3.3.3'])
+        self.assertEqual({'K1': 'V1',
+                          'K2': 'V22222222222222222222222222222'
+                          '222222222222222222222222222',
+                          'K3': '3.3.3.3'}, l)
+
+    def test_format_labels_multiple(self):
+        l = utils.format_labels([
+            'K1=V1',
+            'K2=V22222222222222222222222222222'
+            '222222222222222222222222222',
+            'K3=3.3.3.3'])
+        self.assertEqual({'K1': 'V1',
+                          'K2': 'V22222222222222222222222222222'
+                          '222222222222222222222222222',
+                          'K3': '3.3.3.3'}, l)
+
+    def test_format_labels_multiple_colon_values(self):
+        l = utils.format_labels([
+            'K1=V1',
+            'K2=V2,V22,V222,V2222',
+            'K3=3.3.3.3'])
+        self.assertEqual({'K1': 'V1',
+                          'K2': 'V2,V22,V222,V2222',
+                          'K3': '3.3.3.3'}, l)
+
+    def test_format_labels_parse_comma_false(self):
+        l = utils.format_labels(
+            ['K1=V1,K2=2.2.2.2,K=V'],
+            parse_comma=False)
+        self.assertEqual({'K1': 'V1,K2=2.2.2.2,K=V'}, l)
+
+    def test_format_labels_multiple_values_per_labels(self):
+        l = utils.format_labels([
+            'K1=V1',
+            'K1=V2'])
+        self.assertIn('K1', l)
+        self.assertIn('V1', l['K1'])
+        self.assertIn('V2', l['K1'])
+
+    def test_format_label_bad_label(self):
+        labels = ['K1=V1,K22.2.2.2']
+        ex = self.assertRaises(exc.CommandError,
+                               utils.format_labels, labels)
+        self.assertEqual('labels must be a list of KEY=VALUE '
+                         'not K22.2.2.2', str(ex))
+
+    def test_format_multiple_bad_label(self):
+        labels = ['K1=V1', 'K22.2.2.2']
+        ex = self.assertRaises(exc.CommandError,
+                               utils.format_labels, labels)
+        self.assertEqual('labels must be a list of KEY=VALUE '
+                         'not K22.2.2.2', str(ex))
+
+
+class CliUtilsTest(test_utils.BaseTestCase):
+
+    def test_keys_and_vals_to_strs(self):
+        dict_in = {u'a': u'1', u'b': {u'x': 1, 'y': u'2', u'z': u'3'}, 'c': 7}
+        dict_exp = {'a': '1', 'b': {'x': 1, 'y': '2', 'z': '3'}, 'c': 7}
+        dict_out = cliutils.keys_and_vals_to_strs(dict_in)
+        self.assertEqual(six.text_type(dict_exp), six.text_type(dict_out))

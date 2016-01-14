@@ -1,5 +1,4 @@
-# Copyright (c) 2012 Intel Corporation.
-# All Rights Reserved.
+# Copyright 2015 NEC Corporation.  All rights reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -13,25 +12,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-UUID related utilities and helper functions.
-"""
 
-import uuid
+from magnumclient.common import utils as magnum_utils
+from magnumclient.openstack.common import cliutils as utils
 
 
-def generate_uuid():
-    return str(uuid.uuid4())
-
-
-def is_uuid_like(val):
-    """Returns validation of a value as a UUID.
-
-    For our purposes, a UUID is a canonical form string:
-    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
-
-    """
-    try:
-        return str(uuid.UUID(val)) == val
-    except (TypeError, ValueError, AttributeError):
-        return False
+def do_service_list(cs, args):
+    """Print a list of magnum services."""
+    mservices = cs.mservices.list()
+    columns = ('id', 'host', 'binary', 'state')
+    utils.print_list(mservices, columns,
+                     {'versions': magnum_utils.print_list_field('versions')})

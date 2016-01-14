@@ -52,7 +52,7 @@ except ImportError:
 from magnumclient.openstack.common.apiclient import auth
 from magnumclient.openstack.common.apiclient import exceptions as exc
 from magnumclient.openstack.common import cliutils
-from magnumclient.v1 import client
+from magnumclient.v1 import client as client_v1
 from magnumclient.v1 import shell as shell_v1
 from magnumclient import version
 
@@ -335,13 +335,14 @@ class OpenStackMagnumShell(object):
         subparsers = parser.add_subparsers(metavar='<subcommand>')
 
         try:
-            actions_module = {
-                '1': shell_v1,
+            actions_modules = {
+                '1': shell_v1.COMMAND_MODULES,
             }[version]
         except KeyError:
-            actions_module = shell_v1
+            actions_modules = shell_v1.COMMAND_MODULES
 
-        self._find_actions(subparsers, actions_module)
+        for actions_module in actions_modules:
+            self._find_actions(subparsers, actions_module)
         self._find_actions(subparsers, self)
 
         self._add_bash_completion_subparser(subparsers)
@@ -420,7 +421,8 @@ class OpenStackMagnumShell(object):
         args = subcommand_parser.parse_args(argv)
 
         # Short-circuit and deal with help right away.
-        if args.func == self.do_help:
+        # NOTE(jamespage): args.func is not guaranteed with python >= 3.4
+        if not hasattr(args, 'func') or args.func == self.do_help:
             self.do_help(args)
             return 0
         elif args.func == self.do_bash_completion:
@@ -507,6 +509,13 @@ class OpenStackMagnumShell(object):
                         '--os-password, env[OS_PASSWORD], or '
                         'prompted response')
 
+        try:
+            client = {
+                '1': client_v1,
+            }[options.magnum_api_version]
+        except KeyError:
+            client = client_v1
+
         self.cs = client.Client(username=os_username,
                                 api_key=os_password,
                                 project_id=os_tenant_id,
@@ -551,7 +560,10 @@ class OpenStackMagnumShell(object):
                   help='Display help for <subcommand>.')
     def do_help(self, args):
         """Display help about this program or one of its subcommands."""
-        if args.command:
+        # NOTE(jamespage): args.command is not guaranteed with python >= 3.4
+        command = getattr(args, 'command', '')
+
+        if command:
             if args.command in self.subcommands:
                 self.subcommands[args.command].print_help()
             else:

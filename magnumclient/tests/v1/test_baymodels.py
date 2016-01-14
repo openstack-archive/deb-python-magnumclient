@@ -30,6 +30,7 @@ BAYMODEL1 = {'id': 123,
              'keypair_id': 'keypair1',
              'external_network_id': 'd1f02cfb-d27f-4068-9332-84d907cb0e21',
              'fixed_network': 'private',
+             'network_driver': 'libnetwork',
              'dns_nameserver': '8.8.1.1',
              'docker_volume_size': '71',
              'ssh_authorized_key': 'ssh-rsa AAAAB3NaC1yc2EAAAADAABAAABAQC'
@@ -38,8 +39,14 @@ BAYMODEL1 = {'id': 123,
                                    'YucqbeuM7nmJi+8Hb55y1xWoOZItvKJ+n4VKc'
                                    'Ma71G5/4EOQxuQ/sgW965OOO2Hq027yHOwzcR'
                                    '8vjlQUnTK0HijrbSTLxp/9kazWWraBS0AyXe6'
-                                   'v0Zio4VeFrfpytB8RtZBN digambar@magnum',
+                                   'v0Zio4VeFrfpytB8RtAAA test1234@magnum',
              'coe': 'swarm',
+             'http_proxy': 'http_proxy',
+             'https_proxy': 'https_proxy',
+             'no_proxy': 'no_proxy',
+             'labels': 'key1=val1,key11=val11',
+             'tls_disabled': False,
+             'public': False,
              }
 BAYMODEL2 = {'id': 124,
              'uuid': '66666666-7777-8888-9999-000000000002',
@@ -50,6 +57,7 @@ BAYMODEL2 = {'id': 124,
              'keypair_id': 'keypair2',
              'external_network_id': 'd1f02cfb-d27f-4068-9332-84d907cb0e22',
              'fixed_network': 'private2',
+             'network_driver': 'flannel',
              'dns_nameserver': '8.8.1.2',
              'docker_volume_size': '50',
              'ssh_authorized_key': 'ssh-rsa AAAAB3NzaC1ycEAAAADAQABAAABAQC'
@@ -58,8 +66,11 @@ BAYMODEL2 = {'id': 124,
                                    'DYucqbeuM7nmJi+8Hb55y1xWoOZItvKJ+n4VKc'
                                    'KMa71G5/4EOQxuQ/sgW965OOO2Hq027yHOwzcR'
                                    'X8vjlQUnTK0HijrbSTLxp/9kazWWraBS0AyXe6'
-                                   'Jv0Zio4VeFrfpytB8RtZBN digambar@magnum',
+                                   'Jv0Zio4VeFrfpytB8RtAAA test1234@magnum',
              'coe': 'kubernetes',
+             'labels': 'key2=val2,key22=val22',
+             'tls_disabled': True,
+             'public': True
              }
 
 CREATE_BAYMODEL = copy.deepcopy(BAYMODEL1)
@@ -144,6 +155,13 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(BAYMODEL1['ssh_authorized_key'],
                          baymodel.ssh_authorized_key)
         self.assertEqual(BAYMODEL1['coe'], baymodel.coe)
+        self.assertEqual(BAYMODEL1['http_proxy'], baymodel.http_proxy)
+        self.assertEqual(BAYMODEL1['https_proxy'], baymodel.https_proxy)
+        self.assertEqual(BAYMODEL1['no_proxy'], baymodel.no_proxy)
+        self.assertEqual(BAYMODEL1['network_driver'], baymodel.network_driver)
+        self.assertEqual(BAYMODEL1['labels'], baymodel.labels)
+        self.assertEqual(BAYMODEL1['tls_disabled'], baymodel.tls_disabled)
+        self.assertEqual(BAYMODEL1['public'], baymodel.public)
 
     def test_baymodel_show_by_name(self):
         baymodel = self.mgr.get(BAYMODEL1['name'])
@@ -159,6 +177,13 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(BAYMODEL1['ssh_authorized_key'],
                          baymodel.ssh_authorized_key)
         self.assertEqual(BAYMODEL1['coe'], baymodel.coe)
+        self.assertEqual(BAYMODEL1['http_proxy'], baymodel.http_proxy)
+        self.assertEqual(BAYMODEL1['https_proxy'], baymodel.https_proxy)
+        self.assertEqual(BAYMODEL1['no_proxy'], baymodel.no_proxy)
+        self.assertEqual(BAYMODEL1['network_driver'], baymodel.network_driver)
+        self.assertEqual(BAYMODEL1['labels'], baymodel.labels)
+        self.assertEqual(BAYMODEL1['tls_disabled'], baymodel.tls_disabled)
+        self.assertEqual(BAYMODEL1['public'], baymodel.public)
 
     def test_baymodel_create(self):
         baymodel = self.mgr.create(**CREATE_BAYMODEL)

@@ -36,23 +36,30 @@ class TestCommandLineArgument(utils.TestCase):
 
     _mandatory_arg_error = [
         '.*?^usage: ',
-        '.*?^error: argument',
+        '.*?^error: (the following arguments|argument)',
         ".*?^Try 'magnum help ",
         ]
 
     _few_argument_error = [
         '.*?^usage: magnum ',
-        '.*?^error: too few arguments',
+        '.*?^error: (the following arguments|too few arguments)',
         ".*?^Try"
         ]
 
     def setUp(self):
         super(TestCommandLineArgument, self).setUp()
         self.make_env(fake_env=FAKE_ENV)
-        keystone_mock = mock.patch(
-            'magnumclient.v1.client.Client.get_keystone_client')
-        keystone_mock.start()
-        self.addCleanup(keystone_mock.stop)
+        session_client = mock.patch(
+            'magnumclient.common.httpclient.SessionClient')
+        session_client.start()
+        loader = mock.patch('keystoneauth1.loading.get_plugin_loader')
+        loader.start()
+        session = mock.patch('keystoneauth1.session.Session')
+        session.start()
+
+        self.addCleanup(session_client.stop)
+        self.addCleanup(loader.stop)
+        self.addCleanup(session.stop)
 
     def _test_arg_success(self, command):
         stdout, stderr = self.shell(command)
@@ -89,6 +96,10 @@ class TestCommandLineArgument(utils.TestCase):
         self.assertTrue(mock_create.called)
 
         self._test_arg_success('bay-create --baymodel xxx --node-count 123')
+        self.assertTrue(mock_create.called)
+
+        self._test_arg_success('bay-create --baymodel xxx --node-count 123 '
+                               '--master-count 123')
         self.assertTrue(mock_create.called)
 
         self._test_arg_success('bay-create --baymodel xxx '
@@ -185,7 +196,7 @@ class TestCommandLineArgument(utils.TestCase):
     def test_bay_update_failure_few_args(self, mock_update):
         _error_msg = [
             '.*?^usage: magnum bay-update ',
-            '.*?^error: too few arguments',
+            '.*?^error: (the following arguments|too few arguments)',
             ".*?^Try 'magnum help bay-update' for more information."
             ]
         self._test_arg_failure('bay-update', _error_msg)
@@ -210,8 +221,11 @@ class TestCommandLineArgument(utils.TestCase):
                                '--dns-nameserver test_dns '
                                '--flavor-id test_flavor '
                                '--fixed-network public '
+                               '--network-driver test_driver '
+                               '--labels key=val '
                                '--master-flavor-id test_flavor '
-                               '--docker-volume-size 10')
+                               '--docker-volume-size 10'
+                               '--public')
         self.assertTrue(mock_create.called)
 
         self._test_arg_success('baymodel-create '
@@ -221,6 +235,17 @@ class TestCommandLineArgument(utils.TestCase):
                                '--coe kubernetes '
                                '--name test ')
 
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_public_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test --network-driver test_driver '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm'
+                               '--public')
         self.assertTrue(mock_create.called)
 
     @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
@@ -257,6 +282,16 @@ class TestCommandLineArgument(utils.TestCase):
         self.assertTrue(mock_create.called)
 
     @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_network_driver_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test --network-driver test_driver '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm')
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
     def test_baymodel_create_ssh_authorized_key_success(self, mock_create):
         self._test_arg_success('baymodel-create '
                                '--name test '
@@ -266,6 +301,72 @@ class TestCommandLineArgument(utils.TestCase):
                                '--coe swarm '
                                '--ssh-authorized-key test_key '
                                )
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_http_proxy_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test --fixed-network private '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm '
+                               '--http-proxy http_proxy ')
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_https_proxy_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test --fixed-network private '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm '
+                               '--https-proxy https_proxy ')
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_no_proxy_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test --fixed-network private '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm '
+                               '--no-proxy no_proxy ')
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_labels_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test '
+                               '--labels key=val '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm')
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_separate_labels_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test '
+                               '--labels key1=val1 '
+                               '--labels key2=val2 '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm')
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_combined_labels_success(self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test '
+                               '--labels key1=val1,key2=val2 '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm')
         self.assertTrue(mock_create.called)
 
     @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
@@ -352,12 +453,12 @@ class TestCommandLineArgument(utils.TestCase):
 
     @mock.patch('magnumclient.v1.pods.PodManager.list')
     def test_pod_list_success(self, mock_list):
-        self._test_arg_success('pod-list')
+        self._test_arg_success('pod-list bay_ident')
         self.assertTrue(mock_list.called)
 
     @mock.patch('magnumclient.v1.pods.PodManager.list')
     def test_pod_list_failure(self, mock_list):
-        self._test_arg_failure('pod-list --wrong',
+        self._test_arg_failure('pod-list bay_ident --wrong',
                                self._unrecognized_arg_error)
         self.assertFalse(mock_list.called)
 
@@ -390,13 +491,13 @@ class TestCommandLineArgument(utils.TestCase):
 
     @mock.patch('magnumclient.v1.pods.PodManager.delete')
     def test_pod_delete_success(self, mock_delete):
-        self._test_arg_success('pod-delete xxx')
+        self._test_arg_success('pod-delete xxx zzz')
         self.assertTrue(mock_delete.called)
         self.assertEqual(1, mock_delete.call_count)
 
     @mock.patch('magnumclient.v1.pods.PodManager.delete')
     def test_pod_delete_multiple_id_success(self, mock_delete):
-        self._test_arg_success('pod-delete xxx xyz')
+        self._test_arg_success('pod-delete xxx xyz zzz')
         self.assertTrue(mock_delete.called)
         self.assertEqual(2, mock_delete.call_count)
 
@@ -407,7 +508,7 @@ class TestCommandLineArgument(utils.TestCase):
 
     @mock.patch('magnumclient.v1.pods.PodManager.update')
     def test_pod_update_success(self, mock_update):
-        self._test_arg_success('pod-update xxx replace xxx=xxx')
+        self._test_arg_success('pod-update xxx zzz replace xxx=xxx')
         self.assertTrue(mock_update.called)
         self.assertEqual(1, mock_update.call_count)
 
@@ -418,7 +519,7 @@ class TestCommandLineArgument(utils.TestCase):
 
     @mock.patch('magnumclient.v1.pods.PodManager.get')
     def test_pod_show_success(self, mock_show):
-        self._test_arg_success('pod-show xxx')
+        self._test_arg_success('pod-show xxx zzz')
         self.assertTrue(mock_show.called)
 
     @mock.patch('magnumclient.v1.pods.PodManager.get')
@@ -429,13 +530,13 @@ class TestCommandLineArgument(utils.TestCase):
     @mock.patch('magnumclient.v1.replicationcontrollers.'
                 'ReplicationControllerManager.list')
     def test_rc_list_success(self, mock_list):
-        self._test_arg_success('rc-list')
+        self._test_arg_success('rc-list bay_ident')
         self.assertTrue(mock_list.called)
 
     @mock.patch('magnumclient.v1.replicationcontrollers.'
                 'ReplicationControllerManager.list')
     def test_rc_list_failure(self, mock_list):
-        self._test_arg_failure('rc-list --wrong',
+        self._test_arg_failure('rc-list bay_ident --wrong',
                                self._unrecognized_arg_error)
         self.assertFalse(mock_list.called)
 
@@ -472,13 +573,13 @@ class TestCommandLineArgument(utils.TestCase):
     @mock.patch('magnumclient.v1.replicationcontrollers.'
                 'ReplicationControllerManager.delete')
     def test_rc_delete_success(self, mock_delete):
-        self._test_arg_success('rc-delete xxx')
+        self._test_arg_success('rc-delete xxx zzz')
         self.assertTrue(mock_delete.called)
 
     @mock.patch('magnumclient.v1.replicationcontrollers.'
                 'ReplicationControllerManager.delete')
     def test_rc_delete_multiple_id_success(self, mock_delete):
-        self._test_arg_success('rc-delete xxx xyz')
+        self._test_arg_success('rc-delete xxx xyz zzz')
         self.assertTrue(mock_delete.called)
         self.assertEqual(2, mock_delete.call_count)
 
@@ -491,7 +592,7 @@ class TestCommandLineArgument(utils.TestCase):
     @mock.patch('magnumclient.v1.replicationcontrollers.'
                 'ReplicationControllerManager.get')
     def test_rc_show_success(self, mock_show):
-        self._test_arg_success('rc-show xxx')
+        self._test_arg_success('rc-show xxx zzz')
         self.assertTrue(mock_show.called)
 
     @mock.patch('magnumclient.v1.replicationcontrollers.'
@@ -503,7 +604,7 @@ class TestCommandLineArgument(utils.TestCase):
     @mock.patch('magnumclient.v1.replicationcontrollers.'
                 'ReplicationControllerManager.update')
     def test_rc_update_success(self, mock_update):
-        self._test_arg_success('rc-update xxx replace xxx=xxx')
+        self._test_arg_success('rc-update xxx zzz replace xxx=xxx')
         self.assertTrue(mock_update.called)
         self.assertEqual(1, mock_update.call_count)
 
@@ -514,72 +615,72 @@ class TestCommandLineArgument(utils.TestCase):
         self.assertFalse(mock_update.called)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.list')
-    def test_service_list_success(self, mock_list):
-        self._test_arg_success('service-list')
+    def test_coe_service_list_success(self, mock_list):
+        self._test_arg_success('coe-service-list bay_ident')
         self.assertTrue(mock_list.called)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.list')
-    def test_service_list_failure(self, mock_list):
-        self._test_arg_failure('service-list --wrong',
+    def test_coe_service_list_failure(self, mock_list):
+        self._test_arg_failure('coe-service-list bay_ident --wrong',
                                self._unrecognized_arg_error)
         self.assertFalse(mock_list.called)
 
     @mock.patch('magnumclient.v1.bays.BayManager.get')
     @mock.patch('magnumclient.v1.services.ServiceManager.create')
-    def test_service_create_success(self, mock_create, mock_get):
+    def test_coe_service_create_success(self, mock_create, mock_get):
         mockbay = mock.MagicMock()
         mockbay.status = "CREATE_COMPLETE"
         mock_get.return_value = mockbay
-        self._test_arg_success('service-create '
+        self._test_arg_success('coe-service-create '
                                '--bay xxx '
                                '--manifest test '
                                '--manifest-url test_url')
         self.assertTrue(mock_create.called)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.create')
-    def test_service_create_failure_few_arg(self, mock_create):
-        self._test_arg_failure('service-create '
+    def test_coe_service_create_failure_few_arg(self, mock_create):
+        self._test_arg_failure('coe-service-create '
                                '--manifest test '
                                '--manifest-url test_url',
                                self._mandatory_arg_error)
         self.assertFalse(mock_create.called)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.delete')
-    def test_service_delete_success(self, mock_delete):
-        self._test_arg_success('service-delete xxx')
+    def test_coe_service_delete_success(self, mock_delete):
+        self._test_arg_success('coe-service-delete xxx zzz')
         self.assertTrue(mock_delete.called)
         self.assertEqual(1, mock_delete.call_count)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.delete')
-    def test_service_delete_multiple_id_success(self, mock_delete):
-        self._test_arg_success('service-delete xxx xyz')
+    def test_coe_service_delete_multiple_id_success(self, mock_delete):
+        self._test_arg_success('coe-service-delete xxx xyz zzz')
         self.assertTrue(mock_delete.called)
         self.assertEqual(2, mock_delete.call_count)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.delete')
-    def test_service_delete_failure_no_arg(self, mock_delete):
-        self._test_arg_failure('service-delete', self._few_argument_error)
+    def test_coe_service_delete_failure_no_arg(self, mock_delete):
+        self._test_arg_failure('coe-service-delete', self._few_argument_error)
         self.assertFalse(mock_delete.called)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.get')
-    def test_service_show_success(self, mock_show):
-        self._test_arg_success('service-show xxx')
+    def test_coe_service_show_success(self, mock_show):
+        self._test_arg_success('coe-service-show xxx zzz')
         self.assertTrue(mock_show.called)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.get')
-    def test_service_show_failure_no_arg(self, mock_show):
-        self._test_arg_failure('service-show', self._few_argument_error)
+    def test_coe_service_show_failure_no_arg(self, mock_show):
+        self._test_arg_failure('coe-service-show', self._few_argument_error)
         self.assertFalse(mock_show.called)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.update')
-    def test_service_update_success(self, mock_update):
-        self._test_arg_success('service-update xxx replace xxx=xxx')
+    def test_coe_service_update_success(self, mock_update):
+        self._test_arg_success('coe-service-update xxx zzz replace xxx=xxx')
         self.assertTrue(mock_update.called)
         self.assertEqual(1, mock_update.call_count)
 
     @mock.patch('magnumclient.v1.services.ServiceManager.update')
-    def test_service_update_failure_no_arg(self, mock_update):
-        self._test_arg_failure('service-update', self._few_argument_error)
+    def test_coe_service_update_failure_no_arg(self, mock_update):
+        self._test_arg_failure('coe-service-update', self._few_argument_error)
         self.assertFalse(mock_update.called)
 
     @mock.patch('magnumclient.v1.containers.ContainerManager.list')
@@ -593,15 +694,28 @@ class TestCommandLineArgument(utils.TestCase):
                                self._unrecognized_arg_error)
         self.assertFalse(mock_list.called)
 
-    # NOTE(madhuri) Skip test because of command failure
-    # @mock.patch('magnumclient.v1.containers.ContainerManager.create')
-    # def test_container_create_success(self, mock_create):
-    #    self._test_arg_success('container-create '
-    #                           '--json test')
-    #    self.assertTrue(mock_create.called)
+    @mock.patch('magnumclient.v1.bays.BayManager.get')
+    @mock.patch('magnumclient.v1.containers.ContainerManager.create')
+    def test_container_create_success(self, mock_create, mock_bay_get):
+        mock_bay = mock.MagicMock()
+        mock_bay.status = "CREATE_COMPLETE"
+        mock_bay_get.return_value = mock_bay
+        self._test_arg_success('container-create '
+                               '--image test-image '
+                               '--bay test-bay')
+        self.assertTrue(mock_create.called)
 
-    #    self._test_arg_success('container-creat')
-    #    self.assertTrue(mock_create.called)
+    @mock.patch('magnumclient.v1.bays.BayManager.get')
+    @mock.patch('magnumclient.v1.containers.ContainerManager.create')
+    def test_container_create_failure_without_image(self, mock_create,
+                                                    mock_bay_get):
+        mock_bay = mock.MagicMock()
+        mock_bay.status = "CREATE_COMPLETE"
+        mock_bay_get.return_value = mock_bay
+        self._test_arg_failure('container-create '
+                               '--bay test-bay',
+                               self._mandatory_arg_error)
+        self.assertFalse(mock_create.called)
 
     @mock.patch('magnumclient.v1.containers.ContainerManager.delete')
     def test_container_delete_success(self, mock_delete):
@@ -727,21 +841,27 @@ class TestCommandLineArgument(utils.TestCase):
 
     @mock.patch('magnumclient.v1.containers.ContainerManager.execute')
     def test_container_execute_success(self, mock_execute):
-        self._test_arg_success('container-execute xxx '
+        self._test_arg_success('container-exec xxx '
                                '--command ls')
         self.assertTrue(mock_execute.called)
 
     @mock.patch('magnumclient.v1.containers.ContainerManager.execute')
     def test_container_execute_failure_no_option(self, mock_execute):
-        self._test_arg_failure('container-execute xxx',
+        self._test_arg_failure('container-exec xxx',
                                self._mandatory_arg_error)
         self.assertFalse(mock_execute.called)
 
-        self._test_arg_failure('container-execute --command ls',
+        self._test_arg_failure('container-exec --command ls',
                                self._few_argument_error)
         self.assertFalse(mock_execute.called)
 
     @mock.patch('magnumclient.v1.containers.ContainerManager.execute')
     def test_container_execute_failure_no_arg(self, mock_execute):
-        self._test_arg_failure('container-execute', self._few_argument_error)
+        self._test_arg_failure('container-exec', self._few_argument_error)
         self.assertFalse(mock_execute.called)
+
+    @mock.patch('magnumclient.v1.mservices.MServiceManager.list')
+    def test_magnum_service_list_failure(self, mock_list):
+        self._test_arg_failure('service-list --wrong',
+                               self._unrecognized_arg_error)
+        self.assertFalse(mock_list.called)
