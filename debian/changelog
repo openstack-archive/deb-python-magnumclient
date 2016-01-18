@@ -4,6 +4,8 @@ python-magnumclient (1.1.0-1) experimental; urgency=medium
   * New upstream release.
   * Fixed (build-)depends for this release.
   * Fixed debian/copyright ordering.
+  * Black list:
+    - test_utils.CliUtilsTest.test_keys_and_vals_to_strs
 
   [ Corey Bryant ]
   * New upstream release.
