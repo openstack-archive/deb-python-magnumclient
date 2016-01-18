@@ -3,6 +3,7 @@ python-magnumclient (1.1.0-1) UNRELEASED; urgency=medium
   [ Thomas Goirand ]
   * New upstream release.
   * Fixed (build-)depends for this release.
+  * Fixed debian/copyright ordering.
 
   [ Corey Bryant ]
   * New upstream release.
