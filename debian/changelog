@@ -1,14 +1,6 @@
-python-magnumclient (1.1.0-1) experimental; urgency=medium
-
-  [ Thomas Goirand ]
-  * New upstream release.
-  * Fixed (build-)depends for this release.
-  * Fixed debian/copyright ordering.
-  * Black list:
-    - test_utils.CliUtilsTest.test_keys_and_vals_to_strs
+python-magnumclient (1.1.0-2) experimental; urgency=medium
 
   [ Corey Bryant ]
-  * New upstream release.
   * Align build(-depends) with upstream.
   * d/p/py3-unicode-compat.patch: Add py3 compatibility for unicode builtin.
   * d/p/fix-dict-assert.patch: Fix dictionary order for assert in
@@ -16,6 +8,18 @@ python-magnumclient (1.1.0-1) experimental; urgency=medium
 
   [ James Page ]
   * d/rules: Ensure unit tests are executed for all python versions.
+
+  [ Thomas Goirand ]
+  * Black list:
+    - test_utils.CliUtilsTest.test_keys_and_vals_to_strs
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 18 Jan 2016 10:17:03 +0000
+
+python-magnumclient (1.1.0-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Fixed (build-)depends for this release.
+  * Fixed debian/copyright ordering.
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 14 Jan 2016 08:23:52 +0000
 
