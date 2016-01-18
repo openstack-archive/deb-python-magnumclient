@@ -1,4 +1,4 @@
-python-magnumclient (1.1.0-1) UNRELEASED; urgency=medium
+python-magnumclient (1.1.0-1) experimental; urgency=medium
 
   [ Thomas Goirand ]
   * New upstream release.
