@@ -1,6 +1,7 @@
 python-magnumclient (1.1.0-1) experimental; urgency=medium
 
   * New upstream release.
+  * Fixed (build-)depends for this release.
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 14 Jan 2016 08:23:52 +0000
 
