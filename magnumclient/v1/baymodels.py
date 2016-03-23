@@ -18,9 +18,9 @@ from magnumclient import exceptions
 CREATION_ATTRIBUTES = ['name', 'image_id', 'flavor_id', 'master_flavor_id',
                        'keypair_id', 'external_network_id', 'fixed_network',
                        'dns_nameserver', 'docker_volume_size', 'labels',
-                       'ssh_authorized_key', 'coe', 'http_proxy',
-                       'https_proxy', 'no_proxy', 'network_driver',
-                       'tls_disabled', 'public']
+                       'coe', 'http_proxy', 'https_proxy', 'no_proxy',
+                       'network_driver', 'tls_disabled', 'public',
+                       'registry_enabled', 'volume_driver']
 
 
 class BayModel(base.Resource):
@@ -37,10 +37,10 @@ class BayModelManager(base.Manager):
 
     def list(self, limit=None, marker=None, sort_key=None,
              sort_dir=None, detail=False):
-        """Retrieve a list of port.
+        """Retrieve a list of baymodels.
 
-        :param marker: Optional, the UUID of a port, eg the last
-                       port from a previous result set. Return
+        :param marker: Optional, the UUID of a baymodel, eg the last
+                       baymodel from a previous result set. Return
                        the next result set.
         :param limit: The maximum number of results to return per
                       request, if:

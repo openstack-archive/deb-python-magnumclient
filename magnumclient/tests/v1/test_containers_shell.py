@@ -14,6 +14,7 @@
 
 import mock
 
+from magnumclient import exceptions
 from magnumclient.tests.v1 import shell_test_base
 
 
@@ -22,6 +23,11 @@ class ShellTest(shell_test_base.TestCommandLineArgument):
     @mock.patch('magnumclient.v1.containers.ContainerManager.list')
     def test_container_list_success(self, mock_list):
         self._test_arg_success('container-list')
+        self.assertTrue(mock_list.called)
+
+    @mock.patch('magnumclient.v1.containers.ContainerManager.list')
+    def test_container_list_success_with_bay(self, mock_list):
+        self._test_arg_success('container-list --bay bay_uuid')
         self.assertTrue(mock_list.called)
 
     @mock.patch('magnumclient.v1.containers.ContainerManager.list')
@@ -51,6 +57,20 @@ class ShellTest(shell_test_base.TestCommandLineArgument):
         self._test_arg_failure('container-create '
                                '--bay test-bay',
                                self._mandatory_arg_error)
+        self.assertFalse(mock_create.called)
+
+    @mock.patch('magnumclient.v1.bays.BayManager.get')
+    @mock.patch('magnumclient.v1.containers.ContainerManager.create')
+    def test_container_create_failure_invalid_bay_status(self, mock_create,
+                                                         mock_bay_get):
+        mock_bay = mock.MagicMock()
+        mock_bay.status = "CREATE_IN_PROGRESS"
+        mock_bay_get.return_value = mock_bay
+        self.assertRaises(exceptions.InvalidAttribute, self._test_arg_failure,
+                          'container-create '
+                          '--image test-image '
+                          '--bay test-bay',
+                          self._bay_status_error)
         self.assertFalse(mock_create.called)
 
     @mock.patch('magnumclient.v1.containers.ContainerManager.delete')

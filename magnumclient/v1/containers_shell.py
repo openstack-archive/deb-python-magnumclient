@@ -14,8 +14,9 @@
 
 import json
 
+from magnumclient.common import cliutils as utils
 from magnumclient.common import utils as magnum_utils
-from magnumclient.openstack.common import cliutils as utils
+from magnumclient import exceptions
 
 
 def _show_container(container):
@@ -43,10 +44,12 @@ def _show_container(container):
 def do_container_create(cs, args):
     """Create a container."""
     bay = cs.bays.get(args.bay)
-    if bay.status not in ['CREATE_COMPLETE', 'UPDATE_COMPLETE']:
-        print('Bay status for %s is: %s. We can not create a %s there'
-              ' until the status is CREATE_COMPLETE or UPDATE_COMPLETE.' %
-              (bay.uuid, bay.status, "pod"))
+    if bay.status not in ['CREATE_COMPLETE',
+                          'UPDATE_IN_PROGRESS', 'UPDATE_COMPLETE']:
+        raise exceptions.InvalidAttribute(
+            'Bay status for %s is: %s. We cannot create a %s'
+            ' unless the status is CREATE_COMPLETE, UPDATE_IN_PROGRESS'
+            ' or UPDATE_COMPLETE.' % (bay.uuid, bay.status, "container"))
         return
     opts = {}
     opts['name'] = args.name
@@ -57,10 +60,14 @@ def do_container_create(cs, args):
     _show_container(cs.containers.create(**opts))
 
 
+@utils.arg('--bay',
+           metavar='<bay>', help="UUID or Name of Bay")
 def do_container_list(cs, args):
     """Print a list of available containers."""
-    containers = cs.containers.list()
-    columns = ('uuid', 'name', 'status')
+    opts = {}
+    opts['bay_ident'] = args.bay
+    containers = cs.containers.list(**opts)
+    columns = ('uuid', 'name', 'status', 'bay_uuid')
     utils.print_list(containers, columns,
                      {'versions': magnum_utils.print_list_field('versions')})
 
@@ -98,7 +105,7 @@ def do_container_show(cs, args):
 @utils.arg('containers',
            metavar='<container>',
            nargs='+',
-           help='ID or name of the (container)s to start.')
+           help='ID or name of the (container)s to reboot.')
 def do_container_reboot(cs, args):
     """Reboot specified containers."""
     for container in args.containers:
@@ -112,7 +119,7 @@ def do_container_reboot(cs, args):
 @utils.arg('containers',
            metavar='<container>',
            nargs='+',
-           help='ID or name of the (container)s to start.')
+           help='ID or name of the (container)s to stop.')
 def do_container_stop(cs, args):
     """Stop specified containers."""
     for container in args.containers:
@@ -140,7 +147,7 @@ def do_container_start(cs, args):
 @utils.arg('containers',
            metavar='<container>',
            nargs='+',
-           help='ID or name of the (container)s to start.')
+           help='ID or name of the (container)s to pause.')
 def do_container_pause(cs, args):
     """Pause specified containers."""
     for container in args.containers:
@@ -154,7 +161,7 @@ def do_container_pause(cs, args):
 @utils.arg('containers',
            metavar='<container>',
            nargs='+',
-           help='ID or name of the (container)s to start.')
+           help='ID or name of the (container)s to unpause.')
 def do_container_unpause(cs, args):
     """Unpause specified containers."""
     for container in args.containers:
@@ -167,7 +174,7 @@ def do_container_unpause(cs, args):
 
 @utils.arg('container',
            metavar='<container>',
-           help='ID or name of the container to start.')
+           help='ID or name of the container to get logs for.')
 def do_container_logs(cs, args):
     """Get logs of a container."""
     logs = cs.containers.logs(args.container)
@@ -176,7 +183,7 @@ def do_container_logs(cs, args):
 
 @utils.arg('container',
            metavar='<container>',
-           help='ID or name of the container to start.')
+           help='ID or name of the container to execute command in.')
 @utils.arg('--command',
            required=True,
            metavar='<command>',

@@ -43,7 +43,8 @@ class ClientTest(testtools.TestCase):
         session = mock.Mock()
         mock_session.return_value = session
         client.Client(input_auth_token='mytoken', magnum_url='http://myurl/')
-        mock_session.assert_called_once_with(auth=mock_auth_plugin)
+        mock_session.assert_called_once_with(
+            auth=mock_auth_plugin, verify=True)
         http_client.assert_called_once_with(
             endpoint_override='http://myurl/',
             interface='public',
@@ -65,6 +66,10 @@ class ClientTest(testtools.TestCase):
             auth_url='authurl',
             project_id=None,
             project_name=None,
+            project_domain_id=None,
+            project_domain_name=None,
+            user_domain_id=None,
+            user_domain_name=None,
             token='mytoken')
         http_client.assert_called_once_with(
             interface='public',
@@ -86,6 +91,10 @@ class ClientTest(testtools.TestCase):
             auth_url='authurl',
             username='myuser',
             password=None,
+            project_domain_id=None,
+            project_domain_name=None,
+            user_domain_id=None,
+            user_domain_name=None,
             project_id=None,
             project_name=None)
         http_client.assert_called_once_with(
@@ -113,6 +122,10 @@ class ClientTest(testtools.TestCase):
             auth_url='authurl',
             username='myuser',
             password=None,
+            project_domain_id=None,
+            project_domain_name=None,
+            user_domain_id=None,
+            user_domain_name=None,
             project_id=None,
             project_name=None)
         http_client.assert_not_called()

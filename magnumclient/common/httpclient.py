@@ -36,6 +36,20 @@ CHUNKSIZE = 1024 * 64  # 64kB
 API_VERSION = '/v1'
 
 
+def _extract_error_json(body):
+    """Return error_message from the HTTP response body."""
+    error_json = {}
+    try:
+        body_json = json.loads(body)
+        if 'error_message' in body_json:
+            raw_msg = body_json['error_message']
+            error_json = json.loads(raw_msg)
+    except ValueError:
+        return {}
+
+    return error_json
+
+
 class HTTPClient(object):
 
     def __init__(self, endpoint, **kwargs):
@@ -119,18 +133,6 @@ class HTTPClient(object):
         base_url = _args[2]
         return '%s/%s' % (base_url, url.lstrip('/'))
 
-    def _extract_error_json(self, body):
-        error_json = {}
-        try:
-            body_json = json.loads(body)
-            if 'error_message' in body_json:
-                raw_msg = body_json['error_message']
-                error_json = json.loads(raw_msg)
-        except ValueError:
-            return {}
-
-        return error_json
-
     def _http_request(self, url, method, **kwargs):
         """Send an http request with the specified characteristics.
 
@@ -165,15 +167,23 @@ class HTTPClient(object):
         # Read body into string if it isn't obviously image data
         body_str = None
         if resp.getheader('content-type', None) != 'application/octet-stream':
-            body_str = ''.join([chunk for chunk in body_iter])
+            # decoding byte to string is necessary for Python 3.4 compatibility
+            # this issues has not been found with Python 3.4 unit tests
+            # because the test creates a fake http response of type str
+            # the if statement satisfies test (str) and real (bytes) behavior
+            body_list = [
+                chunk.decode("utf-8") if isinstance(chunk, bytes)
+                else chunk for chunk in body_iter
+            ]
+            body_str = ''.join(body_list)
             self.log_http_response(resp, body_str)
             body_iter = six.StringIO(body_str)
         else:
             self.log_http_response(resp)
 
         if 400 <= resp.status < 600:
-            LOG.warn("Request returned failure status.")
-            error_json = self._extract_error_json(body_str)
+            LOG.warning("Request returned failure status.")
+            error_json = _extract_error_json(body_str)
             raise exceptions.from_response(
                 resp, error_json.get('faultstring'),
                 error_json.get('debuginfo'), method, url)
@@ -293,6 +303,7 @@ class SessionClient(adapter.LegacyJsonAdapter):
 
         kwargs.setdefault('user_agent', self.user_agent)
         kwargs.setdefault('auth', self.auth)
+        kwargs.setdefault('endpoint_override', self.endpoint_override)
 
         endpoint_filter = kwargs.setdefault('endpoint_filter', {})
         endpoint_filter.setdefault('interface', self.interface)
@@ -303,7 +314,10 @@ class SessionClient(adapter.LegacyJsonAdapter):
                                     raise_exc=False, **kwargs)
 
         if 400 <= resp.status_code < 600:
-            raise exceptions.from_response(resp)
+            error_json = _extract_error_json(resp.content)
+            raise exceptions.from_response(
+                resp, error_json.get('faultstring'),
+                error_json.get('debuginfo'), method, url)
         elif resp.status_code in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
             location = resp.headers.get('location')

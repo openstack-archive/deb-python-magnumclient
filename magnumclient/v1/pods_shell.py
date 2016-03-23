@@ -14,8 +14,9 @@
 
 import os.path
 
+from magnumclient.common import cliutils as utils
 from magnumclient.common import utils as magnum_utils
-from magnumclient.openstack.common import cliutils as utils
+from magnumclient import exceptions
 
 
 def _show_pod(pod):
@@ -23,9 +24,16 @@ def _show_pod(pod):
     utils.print_dict(pod._info)
 
 
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 def do_pod_list(cs, args):
     """Print a list of registered pods."""
+    bay = cs.bays.get(args.bay)
+    if bay.status not in ['CREATE_COMPLETE', 'UPDATE_COMPLETE']:
+        raise exceptions.InvalidAttribute(
+            'Bay status for %s is: %s. We can not list pods in there until'
+            ' the status is CREATE_COMPLETE or UPDATE_COMPLETE.' %
+            (bay.uuid, bay.status))
     pods = cs.pods.list(args.bay)
     columns = ('uuid', 'name')
     utils.print_list(pods, columns,
@@ -46,10 +54,10 @@ def do_pod_create(cs, args):
     """Create a pod."""
     bay = cs.bays.get(args.bay)
     if bay.status not in ['CREATE_COMPLETE', 'UPDATE_COMPLETE']:
-        print('Bay status for %s is: %s. We can not create a %s there'
-              ' until the status is CREATE_COMPLETE or UPDATE_COMPLETE.' %
-              (bay.uuid, bay.status, "pod"))
-        return
+        raise exceptions.InvalidAttribute(
+            'Bay status for %s is: %s. We cannot create a %s'
+            ' until the status is CREATE_COMPLETE or UPDATE_COMPLETE.' %
+            (bay.uuid, bay.status, "pod"))
     opts = {}
     opts['manifest_url'] = args.manifest_url
     opts['bay_uuid'] = bay.uuid
@@ -64,7 +72,8 @@ def do_pod_create(cs, args):
 
 
 @utils.arg('pod', metavar='<pod-id>', help="UUID or name of pod")
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 @utils.arg(
     'op',
     metavar='<op>',
@@ -91,10 +100,10 @@ def do_pod_update(cs, args):
 
 
 @utils.arg('pods',
-           metavar='<pods>',
-           nargs='+',
+           metavar='<pods>', nargs='+',
            help='ID or name of the (pod)s to delete.')
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 def do_pod_delete(cs, args):
     """Delete specified pod."""
     for pod in args.pods:
@@ -109,7 +118,8 @@ def do_pod_delete(cs, args):
 @utils.arg('pod',
            metavar='<pod>',
            help='ID or name of the pod to show.')
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 def do_pod_show(cs, args):
     """Show details about the given pod."""
     pod = cs.pods.get(args.pod, args.bay)

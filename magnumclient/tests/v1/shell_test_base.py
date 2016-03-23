@@ -42,7 +42,17 @@ class TestCommandLineArgument(utils.TestCase):
     _few_argument_error = [
         '.*?^usage: magnum ',
         '.*?^error: (the following arguments|too few arguments)',
-        ".*?^Try"
+        ".*?^Try 'magnum help ",
+        ]
+
+    _invalid_value_error = [
+        '.*?^usage: ',
+        '.*?^error: argument .*: invalid .* value:',
+        ".*?^Try 'magnum help ",
+        ]
+
+    _bay_status_error = [
+        '.*?^Bay status for',
         ]
 
     def setUp(self):

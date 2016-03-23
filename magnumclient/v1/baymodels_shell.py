@@ -14,8 +14,8 @@
 
 import os.path
 
+from magnumclient.common import cliutils as utils
 from magnumclient.common import utils as magnum_utils
-from magnumclient.openstack.common import cliutils as utils
 
 
 def _show_baymodel(baymodel):
@@ -25,7 +25,7 @@ def _show_baymodel(baymodel):
 
 @utils.arg('--name',
            metavar='<name>',
-           help='Name of the bay to create.')
+           help='Name of the baymodel to create.')
 @utils.arg('--image-id',
            required=True,
            metavar='<image-id>',
@@ -52,9 +52,10 @@ def _show_baymodel(baymodel):
            metavar='<network-driver>',
            help='The network driver name for instantiating container'
            ' networks.')
-@utils.arg('--ssh-authorized-key',
-           metavar='<ssh-authorized-key>',
-           help='The SSH authorized key to use')
+@utils.arg('--volume-driver',
+           metavar='<volume-driver>',
+           help='The volume driver name for instantiating container'
+           ' volume.')
 @utils.arg('--dns-nameserver',
            metavar='<dns-nameserver>',
            default='8.8.8.8',
@@ -69,6 +70,7 @@ def _show_baymodel(baymodel):
            'of the bay.')
 @utils.arg('--docker-volume-size',
            metavar='<docker-volume-size>',
+           type=int,
            help='Specify the number of size in GB '
                 'for the docker volume to use.')
 @utils.arg('--http-proxy',
@@ -91,6 +93,9 @@ def _show_baymodel(baymodel):
 @utils.arg('--public',
            action='store_true', default=False,
            help='Make baymodel public.')
+@utils.arg('--registry-enabled',
+           action='store_true', default=False,
+           help='Enable docker registry in the Bay')
 def do_baymodel_create(cs, args):
     """Create a baymodel."""
     opts = {}
@@ -102,9 +107,9 @@ def do_baymodel_create(cs, args):
     opts['external_network_id'] = args.external_network_id
     opts['fixed_network'] = args.fixed_network
     opts['network_driver'] = args.network_driver
+    opts['volume_driver'] = args.volume_driver
     opts['dns_nameserver'] = args.dns_nameserver
     opts['docker_volume_size'] = args.docker_volume_size
-    opts['ssh_authorized_key'] = args.ssh_authorized_key
     opts['coe'] = args.coe
     opts['http_proxy'] = args.http_proxy
     opts['https_proxy'] = args.https_proxy
@@ -112,6 +117,7 @@ def do_baymodel_create(cs, args):
     opts['labels'] = magnum_utils.format_labels(args.labels)
     opts['tls_disabled'] = args.tls_disabled
     opts['public'] = args.public
+    opts['registry_enabled'] = args.registry_enabled
 
     baymodel = cs.baymodels.create(**opts)
     _show_baymodel(baymodel)
@@ -140,12 +146,26 @@ def do_baymodel_show(cs, args):
     _show_baymodel(baymodel)
 
 
+@utils.arg('--limit',
+           metavar='<limit>',
+           type=int,
+           help='Maximum number of baymodels to return')
+@utils.arg('--sort-key',
+           metavar='<sort-key>',
+           help='Column to sort results by')
+@utils.arg('--sort-dir',
+           metavar='<sort-dir>',
+           choices=['desc', 'asc'],
+           help='Direction to sort. "asc" or "desc".')
 def do_baymodel_list(cs, args):
     """Print a list of bay models."""
-    nodes = cs.baymodels.list()
+    nodes = cs.baymodels.list(limit=args.limit,
+                              sort_key=args.sort_key,
+                              sort_dir=args.sort_dir)
     columns = ('uuid', 'name')
     utils.print_list(nodes, columns,
-                     {'versions': magnum_utils.print_list_field('versions')})
+                     {'versions': magnum_utils.print_list_field('versions')},
+                     sortby_index=None)
 
 
 @utils.arg('baymodel', metavar='<baymodel>', help="UUID or name of baymodel")

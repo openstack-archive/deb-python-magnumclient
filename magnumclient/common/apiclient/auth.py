@@ -37,7 +37,7 @@ import os
 import six
 from stevedore import extension
 
-from magnumclient.openstack.common.apiclient import exceptions
+from magnumclient.common.apiclient import exceptions
 
 
 _discovered_plugins = {}
@@ -156,8 +156,7 @@ class BaseAuthPlugin(object):
 
     @classmethod
     def add_opts(cls, parser):
-        """Populate the parser with the options for this plugin.
-        """
+        """Populate the parser with the options for this plugin."""
         for opt in cls.opt_names:
             # use `BaseAuthPlugin.common_opt_names` since it is never
             # changed in child classes
@@ -166,8 +165,7 @@ class BaseAuthPlugin(object):
 
     @classmethod
     def add_common_opts(cls, parser):
-        """Add options that are common for several plugins.
-        """
+        """Add options that are common for several plugins."""
         for opt in cls.common_opt_names:
             cls._parser_add_opt(parser, opt)
 
@@ -204,8 +202,7 @@ class BaseAuthPlugin(object):
 
     @abc.abstractmethod
     def _do_authenticate(self, http_client):
-        """Protected method for authentication.
-        """
+        """Protected method for authentication."""
 
     def sufficient_options(self):
         """Check if all required options are present.

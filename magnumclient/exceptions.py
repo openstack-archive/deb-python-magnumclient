@@ -12,8 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from magnumclient.openstack.common.apiclient import exceptions
-from magnumclient.openstack.common.apiclient.exceptions import *  # noqa
+from magnumclient.common.apiclient import exceptions
+from magnumclient.common.apiclient.exceptions import *  # noqa
 
 
 # NOTE(akurilin): This alias is left here since v.0.1.3 to support backwards
@@ -56,16 +56,19 @@ def from_response(response, message=None, traceback=None, method=None,
         response.status_code = response.status
         response.headers = {
             'Content-Type': response.getheader('content-type', "")}
+
+    if hasattr(response, 'status_code'):
+        # NOTE(hongbin): This allows SessionClient to handle faultstring.
         response.json = lambda: {'error': error_body}
 
-    if (response.headers['Content-Type'].startswith('text/') and
+    if (response.headers.get('Content-Type', '').startswith('text/') and
             not hasattr(response, 'text')):
         # NOTE(clif_h): There seems to be a case in the
-        # openstack.common.apiclient.exceptions module where if the
+        # common.apiclient.exceptions module where if the
         # content-type of the response is text/* then it expects
         # the response to have a 'text' attribute, but that
         # doesn't always seem to necessarily be the case.
         # This is to work around that problem.
         response.text = ''
 
-    return exceptions.from_response(response, message, url)
+    return exceptions.from_response(response, method, url)

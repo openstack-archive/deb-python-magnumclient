@@ -14,19 +14,29 @@
 
 import os.path
 
+from magnumclient.common import cliutils as utils
 from magnumclient.common import utils as magnum_utils
-from magnumclient.openstack.common import cliutils as utils
+from magnumclient import exceptions
 
 
 def _show_rc(rc):
     utils.print_dict(rc._info)
 
 
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 def do_rc_list(cs, args):
     """Print a list of registered replication controllers."""
+    bay = cs.bays.get(args.bay)
+    if bay.status not in ['CREATE_COMPLETE', 'UPDATE_COMPLETE']:
+        raise exceptions.InvalidAttribute(
+            'Bay status for %s is: %s. We cannot list '
+            'replication controllers in bay until the bay status '
+            'is CREATE_COMPLETE or UPDATE_COMPLETE.' %
+            (args.bay, bay.status))
+
     rcs = cs.rcs.list(args.bay)
-    columns = ('uuid', 'name')
+    columns = ('uuid', 'name', 'bay_uuid')
     utils.print_list(rcs, columns,
                      {'versions': magnum_utils.print_list_field('versions')})
 
@@ -47,11 +57,11 @@ def do_rc_create(cs, args):
     """Create a replication controller."""
     bay = cs.bays.get(args.bay)
     if bay.status not in ['CREATE_COMPLETE', 'UPDATE_COMPLETE']:
-        print('Bay status for %s is: %s. We can not create a '
-              'replication controller in bay until the status '
-              'is CREATE_COMPLETE or UPDATE_COMPLETE.' %
-              (args.bay, bay.status))
-        return
+        raise exceptions.InvalidAttribute(
+            'Bay status for %s is: %s. We cannot create a '
+            'replication controller in bay until the status '
+            'is CREATE_COMPLETE or UPDATE_COMPLETE.' %
+            (args.bay, bay.status))
 
     opts = {}
     opts['manifest_url'] = args.manifest_url
@@ -66,7 +76,8 @@ def do_rc_create(cs, args):
 
 
 @utils.arg('rc', metavar='<rc>', help="UUID or name of replication controller")
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 @utils.arg(
     'op',
     metavar='<op>',
@@ -96,7 +107,8 @@ def do_rc_update(cs, args):
            metavar='<rcs>',
            nargs='+',
            help='ID or name of the replication (controller)s to delete.')
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 def do_rc_delete(cs, args):
     """Delete specified replication controller."""
     for rc in args.rcs:
@@ -110,7 +122,8 @@ def do_rc_delete(cs, args):
 @utils.arg('rc',
            metavar='<rc>',
            help='ID or name of the replication controller to show.')
-@utils.arg('bay', metavar='<bay>', help="UUID or Name of Bay")
+@utils.arg('--bay', required=True,
+           metavar='<bay>', help="UUID or Name of Bay")
 def do_rc_show(cs, args):
     """Show details about the given replication controller."""
     rc = cs.rcs.get(args.rc, args.bay)

@@ -30,10 +30,11 @@ class ShellTest(shell_test_base.TestCommandLineArgument):
                                '--dns-nameserver test_dns '
                                '--flavor-id test_flavor '
                                '--fixed-network public '
+                               '--volume-driver test_volume '
                                '--network-driver test_driver '
                                '--labels key=val '
                                '--master-flavor-id test_flavor '
-                               '--docker-volume-size 10'
+                               '--docker-volume-size 10 '
                                '--public')
         self.assertTrue(mock_create.called)
 
@@ -44,6 +45,19 @@ class ShellTest(shell_test_base.TestCommandLineArgument):
                                '--coe kubernetes '
                                '--name test ')
 
+        self.assertTrue(mock_create.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
+    def test_baymodel_create_success_with_registry_enabled(
+        self, mock_create):
+        self._test_arg_success('baymodel-create '
+                               '--name test '
+                               '--network-driver test_driver '
+                               '--keypair-id test_keypair '
+                               '--external-network-id test_net '
+                               '--image-id test_image '
+                               '--coe swarm '
+                               '--registry-enabled')
         self.assertTrue(mock_create.called)
 
     @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
@@ -101,15 +115,13 @@ class ShellTest(shell_test_base.TestCommandLineArgument):
         self.assertTrue(mock_create.called)
 
     @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
-    def test_baymodel_create_ssh_authorized_key_success(self, mock_create):
+    def test_baymodel_create_volume_driver_success(self, mock_create):
         self._test_arg_success('baymodel-create '
-                               '--name test '
+                               '--name test --volume-driver test_volume '
                                '--keypair-id test_keypair '
                                '--external-network-id test_net '
                                '--image-id test_image '
-                               '--coe swarm '
-                               '--ssh-authorized-key test_key '
-                               )
+                               '--coe swarm')
         self.assertTrue(mock_create.called)
 
     @mock.patch('magnumclient.v1.baymodels.BayModelManager.create')
@@ -235,6 +247,24 @@ class ShellTest(shell_test_base.TestCommandLineArgument):
     def test_baymodel_list_success(self, mock_list):
         self._test_arg_success('baymodel-list')
         self.assertTrue(mock_list.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.list')
+    def test_baymodel_list_success_with_arg(self, mock_list):
+        self._test_arg_success('baymodel-list '
+                               '--limit 1 '
+                               '--sort-dir asc '
+                               '--sort-key uuid')
+        self.assertTrue(mock_list.called)
+
+    @mock.patch('magnumclient.v1.baymodels.BayModelManager.list')
+    def test_baymodel_list_failure_invalid_arg(self, mock_list):
+        _error_msg = [
+            '.*?^usage: magnum baymodel-list ',
+            '.*?^error: argument --sort-dir: invalid choice: ',
+            ".*?^Try 'magnum help baymodel-list' for more information."
+            ]
+        self._test_arg_failure('baymodel-list --sort-dir aaa', _error_msg)
+        self.assertFalse(mock_list.called)
 
     @mock.patch('magnumclient.v1.baymodels.BayModelManager.list')
     def test_baymodel_list_failure(self, mock_list):

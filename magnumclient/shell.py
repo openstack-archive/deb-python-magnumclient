@@ -49,9 +49,9 @@ try:
 except ImportError:
     pass
 
-from magnumclient.openstack.common.apiclient import auth
-from magnumclient.openstack.common.apiclient import exceptions as exc
-from magnumclient.openstack.common import cliutils
+from magnumclient.common.apiclient import auth
+from magnumclient.common import cliutils
+from magnumclient import exceptions as exc
 from magnumclient.v1 import client as client_v1
 from magnumclient.v1 import shell as shell_v1
 from magnumclient import version
@@ -276,6 +276,26 @@ class OpenStackMagnumShell(object):
                             default=cliutils.env('OS_TENANT_ID'),
                             help='Defaults to env[OS_TENANT_ID].')
 
+        parser.add_argument('--os-user-domain-id',
+                            metavar='<auth-user-domain-id>',
+                            default=cliutils.env('OS_USER_DOMAIN_ID'),
+                            help='Defaults to env[OS_USER_DOMAIN_ID].')
+
+        parser.add_argument('--os-user-domain-name',
+                            metavar='<auth-user-domain-name>',
+                            default=cliutils.env('OS_USER_DOMAIN_NAME'),
+                            help='Defaults to env[OS_USER_DOMAIN_NAME].')
+
+        parser.add_argument('--os-project-domain-id',
+                            metavar='<auth-project-domain-id>',
+                            default=cliutils.env('OS_PROJECT_DOMAIN_ID'),
+                            help='Defaults to env[OS_PROJECT_DOMAIN_ID].')
+
+        parser.add_argument('--os-project-domain-name',
+                            metavar='<auth-project-domain-name>',
+                            default=cliutils.env('OS_PROJECT_DOMAIN_NAME'),
+                            help='Defaults to env[OS_PROJECT_DOMAIN_NAME].')
+
         parser.add_argument('--service-type',
                             metavar='<service-type>',
                             help='Defaults to container for all '
@@ -286,9 +306,9 @@ class OpenStackMagnumShell(object):
         parser.add_argument('--endpoint-type',
                             metavar='<endpoint-type>',
                             default=cliutils.env(
-                                'MAGNUM_ENDPOINT_TYPE',
+                                'OS_ENDPOINT_TYPE',
                                 default=DEFAULT_ENDPOINT_TYPE),
-                            help='Defaults to env[MAGNUM_ENDPOINT_TYPE] or '
+                            help='Defaults to env[OS_ENDPOINT_TYPE] or '
                             + DEFAULT_ENDPOINT_TYPE + '.')
         # NOTE(dtroyer): We can't add --endpoint_type here due to argparse
         #                thinking usage-list --end is ambiguous; but it
@@ -322,6 +342,12 @@ class OpenStackMagnumShell(object):
                             "Service Catalog.")
         parser.add_argument('--bypass_url',
                             help=argparse.SUPPRESS)
+
+        parser.add_argument('--insecure',
+                            default=cliutils.env('MAGNUMCLIENT_INSECURE',
+                                                 default=False),
+                            action='store_true',
+                            help="Do not verify https connections")
 
         # The auth-system-plugins might require some extra options
         auth.load_auth_system_opts(parser)
@@ -396,6 +422,10 @@ class OpenStackMagnumShell(object):
 
     def main(self, argv):
 
+        # NOTE(Christoph Jansen): With Python 3.4 argv somehow becomes a Map.
+        #                         This hack fixes it.
+        argv = list(argv)
+
         # Parse args once to find version and debug settings
         parser = self.get_base_parser()
         (options, args) = parser.parse_known_args(argv)
@@ -430,11 +460,15 @@ class OpenStackMagnumShell(object):
             return 0
 
         (os_username, os_tenant_name, os_tenant_id,
+         os_user_domain_id, os_user_domain_name,
+         os_project_domain_id, os_project_domain_name,
          os_auth_url, os_auth_system, endpoint_type,
-         service_type, bypass_url) = (
+         service_type, bypass_url, insecure) = (
             (args.os_username, args.os_tenant_name, args.os_tenant_id,
+             args.os_user_domain_id, args.os_user_domain_name,
+             args.os_project_domain_id, args.os_project_domain_name,
              args.os_auth_url, args.os_auth_system, args.endpoint_type,
-             args.service_type, args.bypass_url)
+             args.service_type, args.bypass_url, args.insecure)
         )
 
         if os_auth_system and os_auth_system != "keystone":
@@ -520,10 +554,16 @@ class OpenStackMagnumShell(object):
                                 api_key=os_password,
                                 project_id=os_tenant_id,
                                 project_name=os_tenant_name,
+                                user_domain_id=os_user_domain_id,
+                                user_domain_name=os_user_domain_name,
+                                project_domain_id=os_project_domain_id,
+                                project_domain_name=os_project_domain_name,
                                 auth_url=os_auth_url,
                                 service_type=service_type,
                                 region_name=args.os_region_name,
-                                magnum_url=bypass_url)
+                                magnum_url=bypass_url,
+                                endpoint_type=endpoint_type,
+                                insecure=insecure)
 
         args.func(self.cs, args)
 

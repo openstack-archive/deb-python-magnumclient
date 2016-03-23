@@ -22,7 +22,6 @@ from magnumclient.v1 import bays
 from magnumclient.v1 import certificates
 from magnumclient.v1 import containers
 from magnumclient.v1 import mservices
-from magnumclient.v1 import nodes
 from magnumclient.v1 import pods
 from magnumclient.v1 import replicationcontrollers as rcs
 from magnumclient.v1 import services
@@ -34,7 +33,9 @@ class Client(object):
                  endpoint_type=None, service_type='container',
                  region_name=None, input_auth_token=None,
                  session=None, password=None, auth_type='password',
-                 interface='public', service_name=None):
+                 interface='public', service_name=None, insecure=False,
+                 user_domain_id=None, user_domain_name=None,
+                 project_domain_id=None, project_domain_name=None):
 
         # We have to keep the api_key are for backwards compat, but let's
         # remove it from the rest of our code since it's not a keystone
@@ -57,24 +58,31 @@ class Client(object):
                 token=input_auth_token,
                 auth_url=auth_url,
                 project_id=project_id,
-                project_name=project_name)
+                project_name=project_name,
+                user_domain_id=user_domain_id,
+                user_domain_name=user_domain_name,
+                project_domain_id=project_domain_id,
+                project_domain_name=project_domain_name)
         else:
             loader_kwargs = dict(
                 username=username,
                 password=password,
                 auth_url=auth_url,
                 project_id=project_id,
-                project_name=project_name)
+                project_name=project_name,
+                user_domain_id=user_domain_id,
+                user_domain_name=user_domain_name,
+                project_domain_id=project_domain_id,
+                project_domain_name=project_domain_name)
 
-        # Backwards compatability for people not passing in Session
+        # Backwards compatibility for people not passing in Session
         if session is None:
             loader = loading.get_plugin_loader(auth_type)
 
-            # This only supports keystone v2 password auth - but we can
-            # support other auth by passing in a Session, which is the
-            # right thing to do anyway
+            # This should be able to handle v2 and v3 Keystone Auth
             auth_plugin = loader.load_from_options(**loader_kwargs)
-            session = ksa_session.Session(auth=auth_plugin)
+            session = ksa_session.Session(
+                auth=auth_plugin, verify=(not insecure))
 
         client_kwargs = {}
         if magnum_url:
@@ -103,7 +111,6 @@ class Client(object):
         self.certificates = certificates.CertificateManager(self.http_client)
         self.baymodels = baymodels.BayModelManager(self.http_client)
         self.containers = containers.ContainerManager(self.http_client)
-        self.nodes = nodes.NodeManager(self.http_client)
         self.pods = pods.PodManager(self.http_client)
         self.rcs = rcs.ReplicationControllerManager(self.http_client)
         self.services = services.ServiceManager(self.http_client)

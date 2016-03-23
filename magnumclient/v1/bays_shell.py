@@ -12,8 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from magnumclient.common import cliutils as utils
 from magnumclient.common import utils as magnum_utils
-from magnumclient.openstack.common import cliutils as utils
 
 
 def _show_bay(bay):
@@ -38,9 +38,12 @@ def do_bay_list(cs, args):
            help='ID or name of the baymodel.')
 @utils.arg('--node-count',
            metavar='<node-count>',
+           type=int,
+           default=1,
            help='The bay node count.')
 @utils.arg('--master-count',
            metavar='<master-count>',
+           type=int,
            default=1,
            help='The number of master nodes for the bay.')
 @utils.arg('--discovery-url',
@@ -48,6 +51,8 @@ def do_bay_list(cs, args):
            help='Specifies custom discovery url for node discovery.')
 @utils.arg('--timeout',
            metavar='<timeout>',
+           type=int,
+           default=0,
            help='The timeout for bay creation in minutes. Set '
                 'to 0 for no timeout. The default is no timeout.')
 def do_bay_create(cs, args):
@@ -61,9 +66,12 @@ def do_bay_create(cs, args):
     opts['master_count'] = args.master_count
     opts['discovery_url'] = args.discovery_url
     opts['bay_create_timeout'] = args.timeout
-
-    bay = cs.bays.create(**opts)
-    _show_bay(bay)
+    try:
+        bay = cs.bays.create(**opts)
+        _show_bay(bay)
+    except Exception as e:
+        print("Create for bay %s failed: %s" %
+              (opts['name'], e))
 
 
 @utils.arg('bay',
