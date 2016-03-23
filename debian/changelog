@@ -1,8 +1,12 @@
-python-magnumclient (1.1.0-3) UNRELEASED; urgency=medium
+python-magnumclient (2.0.0-1) experimental; urgency=medium
 
+  [ Ondřej Nový ]
   * Fixed VCS URLs (https).
 
- -- Ondřej Nový <novy@ondrej.org>  Sun, 28 Feb 2016 15:41:19 +0100
+  [ Thomas Goirand ]
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Thu, 24 Mar 2016 00:10:01 +0100
 
 python-magnumclient (1.1.0-2) experimental; urgency=medium
 
