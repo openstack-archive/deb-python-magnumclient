@@ -1,10 +1,11 @@
-python-magnumclient (2.0.0-1) experimental; urgency=medium
+python-magnumclient (2.0.0-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
   * Fixed VCS URLs (https).
 
   [ Thomas Goirand ]
   * New upstream release.
+  * Uploading to unstable.
   * Fixed (buid-)depends for this release.
   * Removed all patches (all applied upstream).
 
