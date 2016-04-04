@@ -8,6 +8,7 @@ python-magnumclient (2.0.0-1) unstable; urgency=medium
   * Uploading to unstable.
   * Fixed (buid-)depends for this release.
   * Removed all patches (all applied upstream).
+  * Standards-Version: 3.9.7 (no change).
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 24 Mar 2016 00:10:01 +0100
 
