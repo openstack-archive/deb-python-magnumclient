@@ -31,7 +31,7 @@ def common_filters(marker=None, limit=None, sort_key=None, sort_dir=None):
     :returns: list of string filters.
     """
     filters = []
-    if isinstance(limit, int) and limit > 0:
+    if isinstance(limit, int):
         filters.append('limit=%s' % limit)
     if marker is not None:
         filters.append('marker=%s' % marker)
@@ -88,9 +88,9 @@ def format_labels(lbls, parse_comma=True):
 
     if parse_comma:
         # expect multiple invocations of --labels but fall back
-        # to , delimited if only one --labels is specified
+        # to either , or ; delimited if only one --labels is specified
         if len(lbls) == 1:
-            lbls = lbls[0].split(',')
+            lbls = lbls[0].replace(';', ',').split(',')
 
     labels = {}
     for l in lbls:

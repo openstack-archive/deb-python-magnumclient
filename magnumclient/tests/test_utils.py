@@ -31,7 +31,11 @@ class CommonFiltersTest(test_utils.BaseTestCase):
 
     def test_limit_0(self):
         result = utils.common_filters(limit=0)
-        self.assertEqual([], result)
+        self.assertEqual(['limit=0'], result)
+
+    def test_limit_negative_number(self):
+        result = utils.common_filters(limit=-2)
+        self.assertEqual(['limit=-2'], result)
 
     def test_other(self):
         for key in ('marker', 'sort_key', 'sort_dir'):
@@ -110,6 +114,30 @@ class FormatLabelsTest(test_utils.BaseTestCase):
         l = utils.format_labels([
             'K1=V1,K2=V2,'
             'K3=V3,K4=V4,'
+            'K5=V5'])
+        self.assertEqual({'K1': 'V1',
+                          'K2': 'V2',
+                          'K3': 'V3',
+                          'K4': 'V4',
+                          'K5': 'V5'
+                          }, l)
+
+    def test_format_labels_semicolon(self):
+        l = utils.format_labels([
+            'K1=V1;K2=V2;'
+            'K3=V3;K4=V4;'
+            'K5=V5'])
+        self.assertEqual({'K1': 'V1',
+                          'K2': 'V2',
+                          'K3': 'V3',
+                          'K4': 'V4',
+                          'K5': 'V5'
+                          }, l)
+
+    def test_format_labels_mix_commas_semicolon(self):
+        l = utils.format_labels([
+            'K1=V1,K2=V2,'
+            'K3=V3;K4=V4,'
             'K5=V5'])
         self.assertEqual({'K1': 'V1',
                           'K2': 'V2',
