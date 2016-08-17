@@ -1,0 +1,8 @@
+Code-Review+2: Motohiro/Yuanying Otsuka <yuanying@fraction.jp>
+Workflow+1: Madhuri Kumari <madhuri.kumari@intel.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 01 Aug 2016 17:27:18 +0000
+Reviewed-on: https://review.openstack.org/348675
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master

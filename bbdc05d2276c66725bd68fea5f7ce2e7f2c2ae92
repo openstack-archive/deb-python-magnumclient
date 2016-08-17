@@ -1,0 +1,9 @@
+Code-Review+2: Hongbin Lu <hongbin.lu@huawei.com>
+Code-Review+2: Madhuri Kumari <madhuri.kumari@intel.com>
+Workflow+1: Madhuri Kumari <madhuri.kumari@intel.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 27 May 2016 10:27:41 +0000
+Reviewed-on: https://review.openstack.org/318183
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master

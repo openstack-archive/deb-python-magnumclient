@@ -1,0 +1,10 @@
+Code-Review+1: Abhishek Chanda <abhishek.becs@gmail.com>
+Code-Review+2: Motohiro/Yuanying Otsuka <yuanying@fraction.jp>
+Workflow+1: Madhuri Kumari <madhuri.kumari@intel.com>
+Code-Review+1: Spyros Trigazis <strigazi@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 01 Jul 2016 07:59:28 +0000
+Reviewed-on: https://review.openstack.org/335733
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master

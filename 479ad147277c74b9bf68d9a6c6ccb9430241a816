@@ -1,0 +1,12 @@
+Code-Review+1: GB21 <geetika791@gmail.com>
+Code-Review+1: Spyros Trigazis <strigazi@gmail.com>
+Code-Review+1: Drago <drago.rosson@rackspace.com>
+Code-Review+2: Hongbin Lu <hongbin.lu@huawei.com>
+Code-Review+2: Eli Qiao <qiaoliyong@gmail.com>
+Workflow+1: Eli Qiao <qiaoliyong@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Jul 2016 01:17:25 +0000
+Reviewed-on: https://review.openstack.org/342025
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master

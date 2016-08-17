@@ -1,0 +1,11 @@
+Code-Review+1: Jaycen Grant <jaycen.v.grant@intel.com>
+Code-Review+1: Anush Krishnamurthy <anush.krishnamurthy@intel.com>
+Code-Review+2: Hongbin Lu <hongbin.lu@huawei.com>
+Code-Review+2: Motohiro/Yuanying Otsuka <yuanying@fraction.jp>
+Workflow+1: Motohiro/Yuanying Otsuka <yuanying@fraction.jp>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Jul 2016 04:44:13 +0000
+Reviewed-on: https://review.openstack.org/345032
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master
