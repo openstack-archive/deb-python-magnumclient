@@ -1,0 +1,9 @@
+Code-Review+2: Hongbin Lu <hongbin.lu@huawei.com>
+Code-Review+2: Spyros Trigazis <strigazi@gmail.com>
+Workflow+1: Spyros Trigazis <strigazi@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sat, 03 Sep 2016 12:32:03 +0000
+Reviewed-on: https://review.openstack.org/363166
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/stable/newton
