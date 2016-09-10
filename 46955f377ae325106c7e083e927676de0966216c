@@ -1,0 +1,9 @@
+Code-Review+2: Hongbin Lu <hongbin.lu@huawei.com>
+Code-Review+2: Hua Wang <wanghua.humble@gmail.com>
+Workflow+1: Hua Wang <wanghua.humble@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Apr 2016 03:40:36 +0000
+Reviewed-on: https://review.openstack.org/307295
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/stable/mitaka

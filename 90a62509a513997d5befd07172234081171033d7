@@ -1,0 +1,10 @@
+Code-Review+2: Egor Guz <egor.guz@gmail.com>
+Code-Review+1: Murali Allada <murali.allada@rackspace.com>
+Code-Review+2: Hua Wang <wanghua.humble@gmail.com>
+Workflow+1: Hua Wang <wanghua.humble@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Apr 2016 08:15:31 +0000
+Reviewed-on: https://review.openstack.org/296743
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/stable/mitaka
