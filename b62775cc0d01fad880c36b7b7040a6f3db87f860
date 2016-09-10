@@ -1,0 +1,9 @@
+Code-Review+2: Hongbin Lu <hongbin.lu@huawei.com>
+Code-Review+2: Egor Guz <egor.guz@gmail.com>
+Workflow+1: Egor Guz <egor.guz@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 17 May 2016 06:16:29 +0000
+Reviewed-on: https://review.openstack.org/316860
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/stable/liberty
