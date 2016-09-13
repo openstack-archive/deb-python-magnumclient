@@ -21,7 +21,7 @@ from magnumclient.tests import utils
 
 FAKE_ENV = {'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
-            'OS_TENANT_NAME': 'tenant_name',
+            'OS_PROJECT_NAME': 'project_name',
             'OS_AUTH_URL': 'http://no.where/v2.0',
             'BYPASS_URL': 'http://magnum'}
 
@@ -70,8 +70,10 @@ class TestCommandLineArgument(utils.TestCase):
         self.addCleanup(loader.stop)
         self.addCleanup(session.stop)
 
-    def _test_arg_success(self, command):
+    def _test_arg_success(self, command, keyword=None):
         stdout, stderr = self.shell(command)
+        if keyword:
+            self.assertTrue(keyword in (stdout + stderr))
 
     def _test_arg_failure(self, command, error_msg):
         stdout, stderr = self.shell(command, (2,))

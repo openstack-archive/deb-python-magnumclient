@@ -24,6 +24,8 @@ import os
 import sys
 import textwrap
 
+import decorator
+from magnumclient.common.apiclient import exceptions
 from oslo_utils import encodeutils
 from oslo_utils import strutils
 import prettytable
@@ -72,6 +74,22 @@ def validate_args(fn, *args, **kwargs):
     missing = missing[len(args):]
     if missing:
         raise MissingArgs(missing)
+
+
+def deprecated(message):
+    '''Decorator for marking a call as deprecated by printing a given message.
+
+    Example:
+    >>> @deprecated("Bay functions are deprecated and should be replaced by "
+    ...             "calls to cluster")
+    ... def bay_create(args):
+    ...     pass
+    '''
+    @decorator.decorator
+    def wrapper(func, *args, **kwargs):
+        print(message)
+        return func(*args, **kwargs)
+    return wrapper
 
 
 def arg(*args, **kwargs):
@@ -169,15 +187,18 @@ def print_list(objs, fields, formatters=None, sortby_index=0,
     for o in objs:
         row = []
         for field in fields:
+            data = '-'
             if field in formatters:
-                row.append(formatters[field](o))
+                data = formatters[field](o)
             else:
                 if field in mixed_case_fields:
                     field_name = field.replace(' ', '_')
                 else:
                     field_name = field.lower().replace(' ', '_')
                 data = getattr(o, field_name, '')
-                row.append(data)
+            if data is None:
+                data = '-'
+            row.append(data)
         pt.add_row(row)
 
     if six.PY3:
@@ -226,8 +247,12 @@ def print_dict(dct, dict_property="Property", wrap=0):
                 col1 = ''
         elif isinstance(v, list):
             val = str([str(i) for i in v])
+            if val is None:
+                val = '-'
             pt.add_row([k, val])
         else:
+            if v is None:
+                v = '-'
             pt.add_row([k, v])
 
     if six.PY3:
@@ -287,3 +312,97 @@ def exit(msg=''):
     if msg:
         print (msg, file=sys.stderr)
     sys.exit(1)
+
+
+def _format_field_name(attr):
+    """Format an object attribute in a human-friendly way."""
+    # Split at ':' and leave the extension name as-is.
+    parts = attr.rsplit(':', 1)
+    name = parts[-1].replace('_', ' ')
+    # Don't title() on mixed case
+    if name.isupper() or name.islower():
+        name = name.title()
+    parts[-1] = name
+    return ': '.join(parts)
+
+
+def make_field_formatter(attr, filters=None):
+    """Given an object attribute.
+
+    Return a formatted field name and a formatter suitable for passing to
+    print_list.
+    Optionally pass a dict mapping attribute names to a function. The function
+    will be passed the value of the attribute and should return the string to
+    display.
+    """
+
+    filter_ = None
+    if filters:
+        filter_ = filters.get(attr)
+
+    def get_field(obj):
+        field = getattr(obj, attr, '')
+        if field and filter_:
+            field = filter_(field)
+        return field
+
+    name = _format_field_name(attr)
+    formatter = get_field
+    return name, formatter
+
+
+def _get_list_table_columns_and_formatters(fields, objs, exclude_fields=(),
+                                           filters=None):
+    """Check and add fields to output columns.
+
+    If there is any value in fields that not an attribute of obj,
+    CommandError will be raised.
+    If fields has duplicate values (case sensitive), we will make them unique
+    and ignore duplicate ones.
+    :param fields: A list of string contains the fields to be printed.
+    :param objs: An list of object which will be used to check if field is
+                 valid or not. Note, we don't check fields if obj is None or
+                 empty.
+    :param exclude_fields: A tuple of string which contains the fields to be
+                           excluded.
+    :param filters: A dictionary defines how to get value from fields, this
+                    is useful when field's value is a complex object such as
+                    dictionary.
+    :return: columns, formatters.
+             columns is a list of string which will be used as table header.
+             formatters is a dictionary specifies how to display the value
+             of the field.
+             They can be [], {}.
+    :raise: magnumclient.common.apiclient.exceptions.CommandError.
+    """
+
+    if objs and isinstance(objs, list):
+        obj = objs[0]
+    else:
+        obj = None
+        fields = None
+
+    columns = []
+    formatters = {}
+
+    if fields:
+        non_existent_fields = []
+        exclude_fields = set(exclude_fields)
+
+        for field in fields.split(','):
+            if not hasattr(obj, field):
+                non_existent_fields.append(field)
+                continue
+            if field in exclude_fields:
+                continue
+            field_title, formatter = make_field_formatter(field, filters)
+            columns.append(field_title)
+            formatters[field_title] = formatter
+            exclude_fields.add(field)
+
+        if non_existent_fields:
+            raise exceptions.CommandError(
+                _("Non-existent fields are specified: %s") %
+                non_existent_fields
+            )
+    return columns, formatters

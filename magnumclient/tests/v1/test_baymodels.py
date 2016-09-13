@@ -30,10 +30,12 @@ BAYMODEL1 = {'id': 123,
              'keypair_id': 'keypair1',
              'external_network_id': 'd1f02cfb-d27f-4068-9332-84d907cb0e21',
              'fixed_network': 'private',
+             'fixed_subnet': 'private-subnet',
              'network_driver': 'libnetwork',
              'volume_driver': 'rexray',
              'dns_nameserver': '8.8.1.1',
              'docker_volume_size': '71',
+             'docker_storage_driver': 'devicemapper',
              'coe': 'swarm',
              'http_proxy': 'http_proxy',
              'https_proxy': 'https_proxy',
@@ -41,7 +43,10 @@ BAYMODEL1 = {'id': 123,
              'labels': 'key1=val1,key11=val11',
              'tls_disabled': False,
              'public': False,
-             'registry_enabled': False}
+             'registry_enabled': False,
+             'master_lb_enabled': True,
+             'floating_ip_enabled': True,
+             }
 
 BAYMODEL2 = {'id': 124,
              'uuid': '66666666-7777-8888-9999-000000000002',
@@ -56,6 +61,7 @@ BAYMODEL2 = {'id': 124,
              'volume_driver': 'cinder',
              'dns_nameserver': '8.8.1.2',
              'docker_volume_size': '50',
+             'docker_storage_driver': 'overlay',
              'coe': 'kubernetes',
              'labels': 'key2=val2,key22=val22',
              'tls_disabled': True,
@@ -110,6 +116,13 @@ fake_responses = {
         'PATCH': (
             {},
             UPDATED_BAYMODEL,
+        ),
+    },
+    '/v1/baymodels/detail':
+    {
+        'GET': (
+            {},
+            {'baymodels': [BAYMODEL1, BAYMODEL2]},
         ),
     },
     '/v1/baymodels/?limit=2':
@@ -172,7 +185,7 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(expect, self.api.calls)
         self.assertThat(baymodels, matchers.HasLength(2))
 
-    def _test_baymode_list_with_fileters(
+    def _test_baymodel_list_with_filters(
             self, limit=None, marker=None,
             sort_key=None, sort_dir=None,
             detail=False, expect=[]):
@@ -183,11 +196,19 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(expect, self.api.calls)
         self.assertThat(baymodels_filter, matchers.HasLength(2))
 
+    def test_baymodel_list_with_detail(self):
+        expect = [
+            ('GET', '/v1/baymodels/detail', {}, None),
+        ]
+        self._test_baymodel_list_with_filters(
+            detail=True,
+            expect=expect)
+
     def test_baymodel_list_with_limit(self):
         expect = [
             ('GET', '/v1/baymodels/?limit=2', {}, None),
         ]
-        self._test_baymode_list_with_fileters(
+        self._test_baymodel_list_with_filters(
             limit=2,
             expect=expect)
 
@@ -195,7 +216,7 @@ class BayModelManagerTest(testtools.TestCase):
         expect = [
             ('GET', '/v1/baymodels/?marker=%s' % BAYMODEL2['uuid'], {}, None),
         ]
-        self._test_baymode_list_with_fileters(
+        self._test_baymodel_list_with_filters(
             marker=BAYMODEL2['uuid'],
             expect=expect)
 
@@ -204,7 +225,7 @@ class BayModelManagerTest(testtools.TestCase):
             ('GET', '/v1/baymodels/?limit=2&marker=%s' % BAYMODEL2['uuid'],
              {}, None),
         ]
-        self._test_baymode_list_with_fileters(
+        self._test_baymodel_list_with_filters(
             limit=2, marker=BAYMODEL2['uuid'],
             expect=expect)
 
@@ -212,7 +233,7 @@ class BayModelManagerTest(testtools.TestCase):
         expect = [
             ('GET', '/v1/baymodels/?sort_dir=asc', {}, None),
         ]
-        self._test_baymode_list_with_fileters(
+        self._test_baymodel_list_with_filters(
             sort_dir='asc',
             expect=expect)
 
@@ -220,7 +241,7 @@ class BayModelManagerTest(testtools.TestCase):
         expect = [
             ('GET', '/v1/baymodels/?sort_key=uuid', {}, None),
         ]
-        self._test_baymode_list_with_fileters(
+        self._test_baymodel_list_with_filters(
             sort_key='uuid',
             expect=expect)
 
@@ -228,7 +249,7 @@ class BayModelManagerTest(testtools.TestCase):
         expect = [
             ('GET', '/v1/baymodels/?sort_key=uuid&sort_dir=desc', {}, None),
         ]
-        self._test_baymode_list_with_fileters(
+        self._test_baymodel_list_with_filters(
             sort_key='uuid', sort_dir='desc',
             expect=expect)
 
@@ -242,7 +263,10 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(BAYMODEL1['image_id'], baymodel.image_id)
         self.assertEqual(BAYMODEL1['docker_volume_size'],
                          baymodel.docker_volume_size)
+        self.assertEqual(BAYMODEL1['docker_storage_driver'],
+                         baymodel.docker_storage_driver)
         self.assertEqual(BAYMODEL1['fixed_network'], baymodel.fixed_network)
+        self.assertEqual(BAYMODEL1['fixed_subnet'], baymodel.fixed_subnet)
         self.assertEqual(BAYMODEL1['coe'], baymodel.coe)
         self.assertEqual(BAYMODEL1['http_proxy'], baymodel.http_proxy)
         self.assertEqual(BAYMODEL1['https_proxy'], baymodel.https_proxy)
@@ -254,6 +278,10 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(BAYMODEL1['public'], baymodel.public)
         self.assertEqual(BAYMODEL1['registry_enabled'],
                          baymodel.registry_enabled)
+        self.assertEqual(BAYMODEL1['master_lb_enabled'],
+                         baymodel.master_lb_enabled)
+        self.assertEqual(BAYMODEL1['floating_ip_enabled'],
+                         baymodel.floating_ip_enabled)
 
     def test_baymodel_show_by_name(self):
         baymodel = self.mgr.get(BAYMODEL1['name'])
@@ -265,7 +293,10 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(BAYMODEL1['image_id'], baymodel.image_id)
         self.assertEqual(BAYMODEL1['docker_volume_size'],
                          baymodel.docker_volume_size)
+        self.assertEqual(BAYMODEL1['docker_storage_driver'],
+                         baymodel.docker_storage_driver)
         self.assertEqual(BAYMODEL1['fixed_network'], baymodel.fixed_network)
+        self.assertEqual(BAYMODEL1['fixed_subnet'], baymodel.fixed_subnet)
         self.assertEqual(BAYMODEL1['coe'], baymodel.coe)
         self.assertEqual(BAYMODEL1['http_proxy'], baymodel.http_proxy)
         self.assertEqual(BAYMODEL1['https_proxy'], baymodel.https_proxy)
@@ -277,6 +308,10 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertEqual(BAYMODEL1['public'], baymodel.public)
         self.assertEqual(BAYMODEL1['registry_enabled'],
                          baymodel.registry_enabled)
+        self.assertEqual(BAYMODEL1['master_lb_enabled'],
+                         baymodel.master_lb_enabled)
+        self.assertEqual(BAYMODEL1['floating_ip_enabled'],
+                         baymodel.floating_ip_enabled)
 
     def test_baymodel_create(self):
         baymodel = self.mgr.create(**CREATE_BAYMODEL)
@@ -287,6 +322,8 @@ class BayModelManagerTest(testtools.TestCase):
         self.assertTrue(baymodel)
         self.assertEqual(BAYMODEL1['docker_volume_size'],
                          baymodel.docker_volume_size)
+        self.assertEqual(BAYMODEL1['docker_storage_driver'],
+                         baymodel.docker_storage_driver)
 
     def test_baymodel_create_fail(self):
         CREATE_BAYMODEL_FAIL = copy.deepcopy(CREATE_BAYMODEL)

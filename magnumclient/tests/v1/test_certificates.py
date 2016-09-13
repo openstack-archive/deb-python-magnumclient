@@ -22,19 +22,22 @@ from magnumclient.v1 import certificates
 
 
 CERT1 = {
-    'bay_uuid': '5d12f6fd-a196-4bf0-ae4c-1f639a523a53',
+    'cluster_uuid': '5d12f6fd-a196-4bf0-ae4c-1f639a523a53',
     'pem': 'fake-pem'
 }
 CERT2 = {
-    'bay_uuid': '5d12f6fd-a196-4bf0-ae4c-1f639a523a53',
+    'cluster_uuid': '5d12f6fd-a196-4bf0-ae4c-1f639a523a53',
     'pem': 'fake-pem',
     'csr': 'fake-csr',
 }
-CREATE_CERT = {'bay_uuid': '5d12f6fd-a196-4bf0-ae4c-1f639a523a53',
+
+CREATE_CERT = {'cluster_uuid': '5d12f6fd-a196-4bf0-ae4c-1f639a523a53',
                'csr': 'fake-csr'}
-UPDATED_POD = copy.deepcopy(CERT1)
-NEW_DESCR = 'new-description'
-UPDATED_POD['description'] = NEW_DESCR
+
+CREATE_BACKWARDS_CERT = {
+    'bay_uuid': '5d12f6fd-a196-4bf0-ae4c-1f639a523a53',
+    'csr': 'fake-csr'
+}
 
 fake_responses = {
     '/v1/certificates':
@@ -44,7 +47,7 @@ fake_responses = {
             CERT2,
         )
     },
-    '/v1/certificates/%s' % CERT1['bay_uuid']:
+    '/v1/certificates/%s' % CERT1['cluster_uuid']:
     {
         'GET': (
             {},
@@ -62,12 +65,12 @@ class CertificateManagerTest(testtools.TestCase):
         self.mgr = certificates.CertificateManager(self.api)
 
     def test_cert_show_by_id(self):
-        cert = self.mgr.get(CERT1['bay_uuid'])
+        cert = self.mgr.get(CERT1['cluster_uuid'])
         expect = [
-            ('GET', '/v1/certificates/%s' % CERT1['bay_uuid'], {}, None)
+            ('GET', '/v1/certificates/%s' % CERT1['cluster_uuid'], {}, None)
         ]
         self.assertEqual(expect, self.api.calls)
-        self.assertEqual(CERT1['bay_uuid'], cert.bay_uuid)
+        self.assertEqual(CERT1['cluster_uuid'], cert.cluster_uuid)
         self.assertEqual(CERT1['pem'], cert.pem)
 
     def test_cert_create(self):
@@ -76,11 +79,22 @@ class CertificateManagerTest(testtools.TestCase):
             ('POST', '/v1/certificates', {}, CREATE_CERT),
         ]
         self.assertEqual(expect, self.api.calls)
-        self.assertEqual(CERT2['bay_uuid'], cert.bay_uuid)
+        self.assertEqual(CERT2['cluster_uuid'], cert.cluster_uuid)
         self.assertEqual(CERT2['pem'], cert.pem)
         self.assertEqual(CERT2['csr'], cert.csr)
 
-    def test_pod_create_fail(self):
+    def test_cert_create_backwards_compatibility(self):
+        # Using a CREATION_ATTRIBUTE of bay_uuid and expecting a
+        # cluster_uuid in return
+        cert = self.mgr.create(**CREATE_BACKWARDS_CERT)
+        expect = [
+            ('POST', '/v1/certificates', {}, CREATE_CERT),
+        ]
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(CERT2['cluster_uuid'], cert.cluster_uuid)
+        self.assertEqual(CERT2['csr'], cert.csr)
+
+    def test_create_fail(self):
         create_cert_fail = copy.deepcopy(CREATE_CERT)
         create_cert_fail["wrong_key"] = "wrong"
         self.assertRaisesRegexp(exceptions.InvalidAttribute,
