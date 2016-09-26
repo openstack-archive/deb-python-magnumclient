@@ -57,8 +57,8 @@ Build-Depends-Indep: python-babel (>= 2.3.4),
                      subunit,
                      testrepository,
 Standards-Version: 3.9.8
-Vcs-Browser: https://git.openstack.org/cgit/openstack/deb-python-magnumclient
-Vcs-Git: https://git.openstack.org/openstack/deb-python-magnumclient
+Vcs-Browser: https://git.openstack.org/cgit/openstack/deb-python-magnumclient?h=debian%2Fnewton
+Vcs-Git: https://git.openstack.org/openstack/deb-python-magnumclient -b debian/newton
 Homepage: http://www.openstack.org/
 
 Package: python-magnumclient
