@@ -1,0 +1,9 @@
+Code-Review+1: Radoslaw Smigielski <radoslaw.smigielski@nokia.com>
+Code-Review+2: Spyros Trigazis <strigazi@gmail.com>
+Workflow+1: Madhuri Kumari <madhuri.kumari@intel.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 07 Oct 2016 19:01:42 +0000
+Reviewed-on: https://review.openstack.org/380894
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master
