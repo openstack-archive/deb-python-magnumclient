@@ -1,0 +1,11 @@
+Code-Review+2: Spyros Trigazis <strigazi@gmail.com>
+Code-Review+1: Drago <drago.rosson@rackspace.com>
+Code-Review+1: Tushar Karkera <tushar.karkera@dell.com>
+Code-Review+2: Madhuri Kumari <madhuri.kumari@intel.com>
+Workflow+1: Madhuri Kumari <madhuri.kumari@intel.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 11 Nov 2016 04:20:44 +0000
+Reviewed-on: https://review.openstack.org/395400
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/stable/newton
