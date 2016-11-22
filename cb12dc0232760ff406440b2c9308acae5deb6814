@@ -1,0 +1,10 @@
+Code-Review+2: Madhuri Kumari <madhuri.kumari@intel.com>
+Code-Review+1: Drago <drago.rosson@rackspace.com>
+Code-Review+2: Jaycen Grant <jaycen.v.grant@intel.com>
+Workflow+1: Jaycen Grant <jaycen.v.grant@intel.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 22 Nov 2016 16:31:00 +0000
+Reviewed-on: https://review.openstack.org/398069
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master
