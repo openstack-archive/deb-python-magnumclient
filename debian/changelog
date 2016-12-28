@@ -1,8 +1,10 @@
-python-magnumclient (2.3.0-3) UNRELEASED; urgency=medium
+python-magnumclient (2.3.1-1) unstable; urgency=medium
 
+  * Team upload.
   * Bumped debhelper compat version to 10
+  * New upstream release
 
- -- Ondřej Nový <onovy@debian.org>  Thu, 24 Nov 2016 00:07:28 +0100
+ -- Ondřej Nový <onovy@debian.org>  Wed, 28 Dec 2016 22:59:09 +0100
 
 python-magnumclient (2.3.0-2) unstable; urgency=medium
 
