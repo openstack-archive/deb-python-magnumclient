@@ -1,0 +1,9 @@
+Code-Review+2: Motohiro/Yuanying Otsuka <yuanying@fraction.jp>
+Code-Review+2: yatin <yatin.karel@nectechnologies.in>
+Workflow+1: yatin <yatin.karel@nectechnologies.in>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 23 Jan 2017 04:46:15 +0000
+Reviewed-on: https://review.openstack.org/423683
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master
