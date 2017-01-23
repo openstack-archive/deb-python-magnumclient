@@ -1,0 +1,9 @@
+Code-Review+2: Jaycen Grant <jaycen.v.grant@intel.com>
+Code-Review+2: Spyros Trigazis <strigazi@gmail.com>
+Workflow+1: Spyros Trigazis <strigazi@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 20 Jan 2017 16:32:38 +0000
+Reviewed-on: https://review.openstack.org/422400
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/stable/newton
