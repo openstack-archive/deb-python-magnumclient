@@ -1,0 +1,9 @@
+Code-Review+2: yatin <yatin.karel@nectechnologies.in>
+Code-Review+2: Jaycen Grant <jaycen.v.grant@intel.com>
+Workflow+1: Jaycen Grant <jaycen.v.grant@intel.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 26 Jan 2017 15:51:17 +0000
+Reviewed-on: https://review.openstack.org/425109
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master
