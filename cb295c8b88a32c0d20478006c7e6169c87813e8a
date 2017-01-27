@@ -1,0 +1,9 @@
+Code-Review+2: yatin <yatin.karel@nectechnologies.in>
+Code-Review+2: Spyros Trigazis <strigazi@gmail.com>
+Workflow+1: Spyros Trigazis <strigazi@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 27 Jan 2017 08:10:01 +0000
+Reviewed-on: https://review.openstack.org/424964
+Project: openstack/deb-python-magnumclient
+Branch: refs/heads/master
